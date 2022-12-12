@@ -10,7 +10,11 @@
     "@midwayjs/info": "^3.0.0",
     "@midwayjs/koa": "^3.0.0",
     "@midwayjs/logger": "^2.14.0",
-    "@midwayjs/validate": "^3.0.0"
+    "@midwayjs/typeorm": "^3.8.3",
+    "@midwayjs/validate": "^3.0.0",
+    "dotenv": "^16.0.3",
+    "mysql2": "^2.3.3",
+    "typeorm": "^0.3.11"
   },
   "devDependencies": {
     "@commitlint/cli": "^17.3.0",
@@ -34,14 +38,15 @@
   },
   "scripts": {
     "start": "NODE_ENV=production node ./bootstrap.js",
-    "dev": "cross-env NODE_ENV=local midway-bin dev --ts",
+    "dev": "cross-env CURRENT_ENV=dev MIDWAY_SERVER_ENV=local midway-bin dev --ts",
     "test": "midway-bin test --ts",
     "cov": "midway-bin cov --ts",
     "lint": "mwts check",
     "lint:fix": "mwts fix",
     "ci": "npm run cov",
-    "build": "midway-bin build -c",
-    "prepare": "husky install"
+    "build": "cross-env CURRENT_ENV=prod MIDWAY_SERVER_ENV=prod midway-bin build -c",
+    "prepare": "husky install",
+    "commit": "cz"
   },
   "midway-bin-clean": [
     ".vscode/.tsbuildinfo",
