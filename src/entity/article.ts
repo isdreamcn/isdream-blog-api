@@ -21,7 +21,9 @@ export class Article {
   @Column()
   title: string;
 
-  @Column()
+  @Column({
+    nullable: true,
+  })
   cover: string;
 
   @Column('text')

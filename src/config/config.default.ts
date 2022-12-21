@@ -5,6 +5,7 @@ export default {
   keys: '1670827585510_1877',
   koa: {
     port: 7001,
+    globalPrefix: '/v1',
   },
   typeorm: {
     dataSource: {

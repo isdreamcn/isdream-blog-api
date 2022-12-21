@@ -17,7 +17,9 @@ export class ArticleTag {
   @Column()
   title: string;
 
-  @Column()
+  @Column({
+    nullable: true,
+  })
   description: string;
 
   @CreateDateColumn({
