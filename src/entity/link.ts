@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -49,7 +48,7 @@ export class Link {
   })
   deletedAt: Date;
 
-  @ManyToOne(type => LinkType, linkType => linkType.links)
+  @ManyToOne(() => LinkType, linkType => linkType.links)
   @JoinColumn()
   type: LinkType;
 }

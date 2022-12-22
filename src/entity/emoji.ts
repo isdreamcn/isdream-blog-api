@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -45,7 +44,7 @@ export class Emoji {
   })
   deletedAt: Date;
 
-  @ManyToOne(type => EmojiType, emojiType => emojiType.emojis)
+  @ManyToOne(() => EmojiType, emojiType => emojiType.emojis)
   @JoinColumn()
   type: EmojiType;
 }

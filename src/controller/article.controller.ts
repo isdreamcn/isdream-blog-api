@@ -9,16 +9,14 @@ import {
   Put,
   Query,
 } from '@midwayjs/decorator';
-import { ArticleService } from '../service/article.service';
-import { Article } from '../entity/article';
-
+import { ArticleService, ArticleData } from '../service/article.service';
 @Controller('/article')
 export class ArticleController {
   @Inject()
   articleService: ArticleService;
 
   @Post()
-  async createArticle(@Body() article: Article) {
+  async createArticle(@Body() article: ArticleData) {
     await this.articleService.createArticle(article);
   }
 
@@ -28,7 +26,7 @@ export class ArticleController {
   }
 
   @Put('/:id')
-  async updateArticle(@Param('id') id: number, @Body() article: Article) {
+  async updateArticle(@Param('id') id: number, @Body() article: ArticleData) {
     await this.articleService.updateArticle(id, article);
   }
 

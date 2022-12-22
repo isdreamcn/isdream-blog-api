@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -27,6 +26,6 @@ export class EmojiType {
   })
   updatedAt: Date;
 
-  @OneToMany(type => Emoji, emoji => emoji.type)
+  @OneToMany(() => Emoji, emoji => emoji.type)
   emojis: Emoji[];
 }

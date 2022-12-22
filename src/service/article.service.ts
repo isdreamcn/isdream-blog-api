@@ -1,13 +1,22 @@
-import { Provide } from '@midwayjs/decorator';
+import { Inject, Provide } from '@midwayjs/decorator';
 import { InjectEntityModel } from '@midwayjs/typeorm';
 import { Repository } from 'typeorm';
 import { Article } from '../entity/article';
 import { NotFountHttpError } from '../error/custom.error';
+import { toBoolean } from '../utils';
+import { ArticleTagService } from './articleTag.service';
+
+export interface ArticleData extends Omit<Article, 'tags'> {
+  tags: number[];
+}
 
 @Provide()
 export class ArticleService {
   @InjectEntityModel(Article)
   articleModel: Repository<Article>;
+
+  @Inject()
+  articleTagService: ArticleTagService;
 
   async findArticle(id: number) {
     const article = await this.articleModel.findOne({
@@ -22,13 +31,21 @@ export class ArticleService {
     return article;
   }
 
-  async createArticle({ title, content, isCommented, isTop, tags }: Article) {
+  async createArticle({
+    title,
+    content,
+    isCommented,
+    isTop,
+    tags,
+  }: ArticleData) {
+    const _tags = await this.articleTagService.findArticleTags(tags);
+
     return await this.articleModel.save({
       title,
       content,
-      isCommented,
-      isTop,
-      tags,
+      isCommented: toBoolean(isCommented),
+      isTop: toBoolean(isTop),
+      tags: _tags,
     });
   }
 
@@ -39,23 +56,25 @@ export class ArticleService {
 
   async updateArticle(
     id: number,
-    { title, content, isCommented, isTop, tags }: Article
+    { title, content, isCommented, isTop, tags }: ArticleData
   ) {
     const article = await this.findArticle(id);
+    const _tags = await this.articleTagService.findArticleTags(tags);
+
     return await this.articleModel.save({
       ...article,
       title,
       content,
-      isCommented,
-      isTop,
-      tags,
+      isCommented: toBoolean(isCommented),
+      isTop: toBoolean(isTop),
+      tags: _tags,
     });
   }
 
   async findList(page: number, pageSize: number, q: string) {
-    const queryBuilder = await this.articleModel
+    const queryBuilder = this.articleModel
       .createQueryBuilder('article')
-      .leftJoinAndSelect('article.tags', 'tags')
+      .leftJoinAndSelect('article.tags', 'tag')
       .where('article.title LIKE :title OR article.content LIKE :content')
       .setParameters({
         title: `%${q}%`,
@@ -63,9 +82,9 @@ export class ArticleService {
       });
 
     const data = await queryBuilder
-      .orderBy('article.isTop')
-      .addOrderBy('article.views')
-      .addOrderBy('article.createdAt')
+      .orderBy('article.isTop', 'DESC')
+      .addOrderBy('article.views', 'DESC')
+      .addOrderBy('article.createdAt', 'DESC')
       .skip((page - 1) * pageSize)
       .take(pageSize)
       .getMany();

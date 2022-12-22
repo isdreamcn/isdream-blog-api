@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -30,6 +29,6 @@ export class LinkType {
   })
   updatedAt: Date;
 
-  @OneToMany(type => Link, link => link.type)
+  @OneToMany(() => Link, link => link.type)
   links: Link[];
 }

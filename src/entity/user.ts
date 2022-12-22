@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -48,9 +47,9 @@ export class User {
   })
   deletedAt: Date;
 
-  @OneToMany(type => Comment, comment => comment.user)
+  @OneToMany(() => Comment, comment => comment.user)
   comments: Comment[];
 
-  @ManyToMany(type => Comment, comment => comment.likedUsers)
+  @ManyToMany(() => Comment, comment => comment.likedUsers)
   likedComments: Comment[];
 }

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -61,10 +60,12 @@ export class Article {
   })
   deletedAt: Date;
 
-  @OneToMany(type => Comment, comment => comment.article)
+  @OneToMany(() => Comment, comment => comment.article)
   comments: Comment[];
 
-  @ManyToMany(type => ArticleTag, articleTag => articleTag.articles)
+  @ManyToMany(() => ArticleTag, articleTag => articleTag.articles, {
+    cascade: true,
+  })
   @JoinTable()
   tags: ArticleTag[];
 }

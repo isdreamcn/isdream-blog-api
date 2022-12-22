@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -32,6 +31,6 @@ export class ArticleTag {
   })
   updatedAt: Date;
 
-  @ManyToMany(type => Article, article => article.tags)
+  @ManyToMany(() => Article, article => article.tags)
   articles: Article[];
 }
