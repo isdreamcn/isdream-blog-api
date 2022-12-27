@@ -21,6 +21,9 @@ export class ArticleTag {
   })
   description: string;
 
+  @Column()
+  color: string;
+
   @CreateDateColumn({
     type: 'timestamp',
   })

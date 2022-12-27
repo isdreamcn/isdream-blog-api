@@ -6,7 +6,7 @@ import { NotFountHttpError } from '../error/custom.error';
 import { toBoolean } from '../utils';
 import { ArticleTagService } from './articleTag.service';
 
-export interface ArticleData extends Omit<Article, 'tags'> {
+export interface IArticleData extends Omit<Article, 'tags'> {
   tags: number[];
 }
 
@@ -26,7 +26,7 @@ export class ArticleService {
       relations: ['tags'],
     });
     if (!article) {
-      throw new NotFountHttpError();
+      throw new NotFountHttpError(`id为${id}的文章不存在`);
     }
     return article;
   }
@@ -37,7 +37,7 @@ export class ArticleService {
     isCommented,
     isTop,
     tags,
-  }: ArticleData) {
+  }: IArticleData) {
     const _tags = await this.articleTagService.findArticleTags(tags);
 
     return await this.articleModel.save({
@@ -56,7 +56,7 @@ export class ArticleService {
 
   async updateArticle(
     id: number,
-    { title, content, isCommented, isTop, tags }: ArticleData
+    { title, content, isCommented, isTop, tags }: IArticleData
   ) {
     const article = await this.findArticle(id);
     const _tags = await this.articleTagService.findArticleTags(tags);
@@ -71,7 +71,7 @@ export class ArticleService {
     });
   }
 
-  async findList(page: number, pageSize: number, q: string) {
+  async findArticleList(page: number, pageSize: number, q: string) {
     const queryBuilder = this.articleModel
       .createQueryBuilder('article')
       .leftJoinAndSelect('article.tags', 'tag')

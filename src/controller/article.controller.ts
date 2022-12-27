@@ -9,14 +9,14 @@ import {
   Put,
   Query,
 } from '@midwayjs/decorator';
-import { ArticleService, ArticleData } from '../service/article.service';
+import { ArticleService, IArticleData } from '../service/article.service';
 @Controller('/article')
 export class ArticleController {
   @Inject()
   articleService: ArticleService;
 
   @Post()
-  async createArticle(@Body() article: ArticleData) {
+  async createArticle(@Body() article: IArticleData) {
     await this.articleService.createArticle(article);
   }
 
@@ -26,17 +26,8 @@ export class ArticleController {
   }
 
   @Put('/:id')
-  async updateArticle(@Param('id') id: number, @Body() article: ArticleData) {
+  async updateArticle(@Param('id') id: number, @Body() article: IArticleData) {
     await this.articleService.updateArticle(id, article);
-  }
-
-  @Get()
-  async findArticleList(
-    @Query('page') page = 1,
-    @Query('pageSize') pageSize = 10,
-    @Query('q') q = ''
-  ) {
-    return await this.articleService.findList(page, pageSize, q);
   }
 
   @Get('/:id')
@@ -45,5 +36,14 @@ export class ArticleController {
     return {
       data,
     };
+  }
+
+  @Get()
+  async findArticleList(
+    @Query('page') page = 1,
+    @Query('pageSize') pageSize = 10,
+    @Query('q') q = ''
+  ) {
+    return await this.articleService.findArticleList(page, pageSize, q);
   }
 }

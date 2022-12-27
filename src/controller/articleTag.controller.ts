@@ -7,6 +7,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
 } from '@midwayjs/core';
 import { ArticleTag } from '../entity/articleTag';
 import { ArticleTagService } from '../service/articleTag.service';
@@ -43,8 +44,17 @@ export class articleTagController {
   }
 
   @Get()
-  async findArticleTagList() {
-    const data = await this.articleTagService.findArticleTagList();
+  async findArticleTagList(
+    @Query('page') page = 1,
+    @Query('pageSize') pageSize = 10,
+    @Query('q') q = ''
+  ) {
+    return await this.articleTagService.findArticleTagList(page, pageSize, q);
+  }
+
+  @Get('/all')
+  async findArticleTagAll() {
+    const data = await this.articleTagService.findArticleTagAll();
     return {
       data,
     };

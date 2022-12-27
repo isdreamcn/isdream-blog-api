@@ -17,7 +17,7 @@ export class ArticleTagService {
     });
 
     if (!articleTag) {
-      throw new NotFountHttpError();
+      throw new NotFountHttpError(`id为${id}的文章标签不存在`);
     }
 
     return articleTag;
@@ -27,10 +27,11 @@ export class ArticleTagService {
     return await Promise.all(ids.map(id => this.findArticleTag(id)));
   }
 
-  async createArticleTag({ title, description }: ArticleTag) {
+  async createArticleTag({ title, description, color }: ArticleTag) {
     return await this.articleTagModel.save({
       title,
       description,
+      color,
     });
   }
 
@@ -39,24 +40,51 @@ export class ArticleTagService {
     return await this.articleTagModel.remove(articleTag);
   }
 
-  async updateArticleTag(id: number, { title, description }: ArticleTag) {
+  async updateArticleTag(
+    id: number,
+    { title, description, color }: ArticleTag
+  ) {
     const articleTag = await this.findArticleTag(id);
     return await this.articleTagModel.save({
       ...articleTag,
       title,
       description,
+      color,
     });
   }
 
-  async findArticleTagList() {
+  async findArticleTagList(page: number, pageSize: number, q: string) {
+    const queryBuilder = this.articleTagModel
+      .createQueryBuilder('articleTag')
+      .where(
+        'articleTag.title LIKE :title OR articleTag.description LIKE :description'
+      )
+      .setParameters({
+        title: `%${q}%`,
+        description: `%${q}%`,
+      });
+
+    const data = await queryBuilder
+      .addOrderBy('articleTag.createdAt', 'DESC')
+      .skip((page - 1) * pageSize)
+      .take(pageSize)
+      .getMany();
+    const count = await queryBuilder.getCount();
+
+    return {
+      data,
+      count,
+    };
+  }
+
+  async findArticleTagAll() {
     return await this.articleTagModel
       .createQueryBuilder('articleTag')
+      .loadRelationCountAndMap('articleTag.articleCount', 'articleTag.articles')
       .addSelect('COUNT(article.id) as count')
       .leftJoin('articleTag.articles', 'article')
-      .loadRelationCountAndMap('articleTag.articleCount', 'articleTag.articles')
       .groupBy('articleTag.id')
       .orderBy('count', 'DESC')
-      .addOrderBy('articleTag.createdAt', 'DESC')
       .getMany();
   }
 }
