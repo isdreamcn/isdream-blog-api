@@ -69,6 +69,12 @@ export class LinkTypeService {
   }
 
   async findLinkTypeAll() {
+    return await this.linkTypeModel.find({
+      relations: ['links'],
+    });
+  }
+
+  async findLinkTypeSelect() {
     return await this.linkTypeModel.find({});
   }
 }

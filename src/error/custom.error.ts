@@ -5,3 +5,9 @@ export class NotFountHttpError extends MidwayHttpError {
     super(message ?? '数据不存在', HttpStatus.NOT_FOUND);
   }
 }
+
+export class FieldRequiredError extends MidwayHttpError {
+  constructor(field) {
+    super(`字段${field}必须填写`, HttpStatus.BAD_REQUEST);
+  }
+}

@@ -44,7 +44,9 @@ export class Emoji {
   })
   deletedAt: Date;
 
-  @ManyToOne(() => EmojiType, emojiType => emojiType.emojis)
+  @ManyToOne(() => EmojiType, emojiType => emojiType.emojis, {
+    nullable: false,
+  })
   @JoinColumn()
   type: EmojiType;
 }

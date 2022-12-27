@@ -48,7 +48,9 @@ export class Link {
   })
   deletedAt: Date;
 
-  @ManyToOne(() => LinkType, linkType => linkType.links)
+  @ManyToOne(() => LinkType, linkType => linkType.links, {
+    nullable: false,
+  })
   @JoinColumn()
   type: LinkType;
 }

@@ -38,11 +38,15 @@ export class Comment {
   })
   deletedAt: Date;
 
-  @ManyToOne(() => User, user => user.comments)
+  @ManyToOne(() => User, user => user.comments, {
+    nullable: false,
+  })
   @JoinColumn()
   user: User;
 
-  @ManyToOne(() => Article, article => article.comments)
+  @ManyToOne(() => Article, article => article.comments, {
+    nullable: false,
+  })
   @JoinColumn()
   article: Article;
 

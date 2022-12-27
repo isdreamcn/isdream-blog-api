@@ -56,4 +56,12 @@ export class LinkTypeController {
       data,
     };
   }
+
+  @Get('/select')
+  async findLinkTypeSelect() {
+    const data = await this.linkTypeService.findLinkTypeSelect();
+    return {
+      data,
+    };
+  }
 }
