@@ -30,7 +30,7 @@ export class Link {
   @Column({
     default: false,
   })
-  isDead: boolean;
+  dead: boolean;
 
   @CreateDateColumn({
     type: 'timestamp',

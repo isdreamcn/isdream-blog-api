@@ -22,6 +22,11 @@ export class Comment {
   @Column()
   comment: string;
 
+  @Column({
+    default: false,
+  })
+  approved: boolean;
+
   @CreateDateColumn({
     type: 'timestamp',
   })
