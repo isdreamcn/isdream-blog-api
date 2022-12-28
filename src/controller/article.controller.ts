@@ -1,15 +1,16 @@
 import {
-  Body,
   Controller,
+  Inject,
+  Body,
   Del,
   Get,
-  Inject,
   Param,
   Post,
   Put,
   Query,
 } from '@midwayjs/decorator';
 import { ArticleService, IArticleData } from '../service/article.service';
+
 @Controller('/article')
 export class ArticleController {
   @Inject()

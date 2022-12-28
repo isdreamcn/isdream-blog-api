@@ -1,9 +1,9 @@
 import {
-  Body,
   Controller,
+  Inject,
+  Body,
   Del,
   Get,
-  Inject,
   Param,
   Post,
   Put,

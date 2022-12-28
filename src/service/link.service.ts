@@ -6,7 +6,7 @@ import { Link } from '../entity/link';
 import { LinkTypeService } from './linkType.service';
 import { FieldRequiredError, NotFountHttpError } from '../error/custom.error';
 
-export interface ILinkData extends Omit<Link, 'type'> {
+export interface ILinkData extends Partial<Omit<Link, 'type'>> {
   type?: number;
 }
 
@@ -49,7 +49,7 @@ export class LinkService {
 
   async deleteLink(id: number) {
     const link = await this.findLink(id);
-    return await this.linkModel.remove(link);
+    return await this.linkModel.softRemove(link);
   }
 
   async updateLink(

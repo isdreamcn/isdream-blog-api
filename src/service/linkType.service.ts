@@ -4,6 +4,8 @@ import { Repository } from 'typeorm';
 import { LinkType } from '../entity/linkType';
 import { NotFountHttpError } from '../error/custom.error';
 
+export type ILinkTypeData = Partial<LinkType>;
+
 @Provide()
 export class LinkTypeService {
   @InjectEntityModel(LinkType)
@@ -23,7 +25,7 @@ export class LinkTypeService {
     return linkType;
   }
 
-  async createLinkType({ title, description }: LinkType) {
+  async createLinkType({ title, description }: ILinkTypeData) {
     return await this.linkTypeModel.save({
       title,
       description,
@@ -35,7 +37,7 @@ export class LinkTypeService {
     return await this.linkTypeModel.remove(linkType);
   }
 
-  async updateLinkType(id: number, { title, description }: LinkType) {
+  async updateLinkType(id: number, { title, description }: ILinkTypeData) {
     const linkType = await this.findLinkType(id);
     return await this.linkTypeModel.save({
       ...linkType,

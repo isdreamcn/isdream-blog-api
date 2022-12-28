@@ -8,6 +8,7 @@ import {
   OneToMany,
   ManyToMany,
   JoinTable,
+  Index,
 } from 'typeorm';
 import { Comment } from './comment';
 import { ArticleTag } from './articleTag';
@@ -17,6 +18,7 @@ export class Article {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Index()
   @Column()
   title: string;
 
@@ -25,6 +27,7 @@ export class Article {
   })
   cover: string;
 
+  @Index({ fulltext: true })
   @Column('text')
   content: string;
 

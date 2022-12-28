@@ -1,16 +1,18 @@
 import {
-  Body,
   Controller,
+  Inject,
+  Body,
   Del,
   Get,
-  Inject,
   Param,
   Post,
   Put,
   Query,
-} from '@midwayjs/core';
-import { ArticleTag } from '../entity/articleTag';
-import { ArticleTagService } from '../service/articleTag.service';
+} from '@midwayjs/decorator';
+import {
+  ArticleTagService,
+  IArticleTagData,
+} from '../service/articleTag.service';
 
 @Controller('/article_tag')
 export class articleTagController {
@@ -18,7 +20,7 @@ export class articleTagController {
   articleTagService: ArticleTagService;
 
   @Post()
-  async createArticleTag(@Body() articleTag: ArticleTag) {
+  async createArticleTag(@Body() articleTag: IArticleTagData) {
     await this.articleTagService.createArticleTag(articleTag);
   }
 
@@ -30,7 +32,7 @@ export class articleTagController {
   @Put('/:id')
   async updateArticleTag(
     @Param('id') id: number,
-    @Body() articleTag: ArticleTag
+    @Body() articleTag: IArticleTagData
   ) {
     await this.articleTagService.updateArticleTag(id, articleTag);
   }

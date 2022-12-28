@@ -4,6 +4,8 @@ import { Repository } from 'typeorm';
 import { ArticleTag } from '../entity/articleTag';
 import { NotFountHttpError } from '../error/custom.error';
 
+export type IArticleTagData = Partial<ArticleTag>;
+
 @Provide()
 export class ArticleTagService {
   @InjectEntityModel(ArticleTag)
@@ -27,7 +29,7 @@ export class ArticleTagService {
     return await Promise.all(ids.map(id => this.findArticleTag(id)));
   }
 
-  async createArticleTag({ title, description, color }: ArticleTag) {
+  async createArticleTag({ title, description, color }: IArticleTagData) {
     return await this.articleTagModel.save({
       title,
       description,
@@ -42,7 +44,7 @@ export class ArticleTagService {
 
   async updateArticleTag(
     id: number,
-    { title, description, color }: ArticleTag
+    { title, description, color }: IArticleTagData
   ) {
     const articleTag = await this.findArticleTag(id);
     return await this.articleTagModel.save({

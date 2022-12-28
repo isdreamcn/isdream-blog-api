@@ -6,8 +6,8 @@ import { NotFountHttpError } from '../error/custom.error';
 import { toBoolean } from '../utils';
 import { ArticleTagService } from './articleTag.service';
 
-export interface IArticleData extends Omit<Article, 'tags'> {
-  tags: number[];
+export interface IArticleData extends Partial<Omit<Article, 'tags'>> {
+  tags?: number[];
 }
 
 @Provide()

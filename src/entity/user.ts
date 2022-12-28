@@ -7,6 +7,7 @@ import {
   Column,
   OneToMany,
   ManyToMany,
+  Index,
 } from 'typeorm';
 import { Comment } from './comment';
 
@@ -15,6 +16,7 @@ export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Index({ unique: true })
   @Column()
   email: string;
 

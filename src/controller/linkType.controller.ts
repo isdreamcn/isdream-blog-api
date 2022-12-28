@@ -1,16 +1,15 @@
 import {
-  Body,
   Controller,
-  Del,
   Inject,
+  Body,
+  Del,
   Param,
   Post,
   Put,
+  Get,
   Query,
-} from '@midwayjs/core';
-import { LinkTypeService } from '../service/linkType.service';
-import { LinkType } from '../entity/linkType';
-import { Get } from '@midwayjs/decorator';
+} from '@midwayjs/decorator';
+import { LinkTypeService, ILinkTypeData } from '../service/linkType.service';
 
 @Controller('/link_type')
 export class LinkTypeController {
@@ -18,7 +17,7 @@ export class LinkTypeController {
   linkTypeService: LinkTypeService;
 
   @Post()
-  async createLinkType(@Body() linkType: LinkType) {
+  async createLinkType(@Body() linkType: ILinkTypeData) {
     await this.linkTypeService.createLinkType(linkType);
   }
 
@@ -28,7 +27,10 @@ export class LinkTypeController {
   }
 
   @Put('/:id')
-  async updateLinkType(@Param('id') id: number, @Body() linkType: LinkType) {
+  async updateLinkType(
+    @Param('id') id: number,
+    @Body() linkType: ILinkTypeData
+  ) {
     await this.linkTypeService.updateLinkType(id, linkType);
   }
 
