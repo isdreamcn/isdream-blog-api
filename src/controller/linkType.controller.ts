@@ -51,9 +51,9 @@ export class LinkTypeController {
     return await this.linkTypeService.findLinkTypeList(page, pageSize, q);
   }
 
-  @Get('/all')
-  async findLinkTypeAll() {
-    const data = await this.linkTypeService.findLinkTypeAll();
+  @Get('/main')
+  async findLinkTypeMain() {
+    const data = await this.linkTypeService.findLinkTypeMain();
     return {
       data,
     };

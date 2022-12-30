@@ -1,9 +1,9 @@
 export const toBoolean = (v: any) => {
-  if (v === '1' || v === 1) {
+  if ([true, 1, '1'].includes(v)) {
     return true;
-  } else if (v === '0' || v === 0) {
+  } else if ([false, 0, '0'].includes(v)) {
     return false;
   }
 
-  return v;
+  return undefined;
 };

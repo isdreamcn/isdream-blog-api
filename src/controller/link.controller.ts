@@ -2,7 +2,6 @@ import {
   Controller,
   Inject,
   Body,
-  Del,
   Get,
   Param,
   Post,
@@ -19,11 +18,6 @@ export class LinkController {
   @Post()
   async createLink(@Body() link: ILinkData) {
     await this.linkService.createLink(link);
-  }
-
-  @Del('/:id')
-  async deleteLink(@Param('id') id: number) {
-    await this.linkService.deleteLink(id);
   }
 
   @Put('/:id')
@@ -43,8 +37,9 @@ export class LinkController {
   async findLinkList(
     @Query('page') page = 1,
     @Query('pageSize') pageSize = 10,
-    @Query('q') q = ''
+    @Query('q') q = '',
+    @Query('dead') dead?: boolean
   ) {
-    return await this.linkService.findLinkList(page, pageSize, q);
+    return await this.linkService.findLinkList(page, pageSize, q, dead);
   }
 }

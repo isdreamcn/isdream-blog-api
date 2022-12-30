@@ -18,6 +18,12 @@ export class ArticleService {
   @Inject()
   articleTagService: ArticleTagService;
 
+  async addArticleViews(id: number) {
+    const article = await this.findArticle(id);
+    article.views++;
+    return await this.articleModel.save(article);
+  }
+
   async findArticle(id: number) {
     const article = await this.articleModel.findOne({
       where: {

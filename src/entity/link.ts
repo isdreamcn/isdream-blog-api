@@ -4,7 +4,6 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
-  DeleteDateColumn,
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
@@ -41,12 +40,6 @@ export class Link {
     type: 'timestamp',
   })
   updatedAt: Date;
-
-  @DeleteDateColumn({
-    type: 'timestamp',
-    select: false,
-  })
-  deletedAt: Date;
 
   @ManyToOne(() => LinkType, linkType => linkType.links, {
     nullable: false,

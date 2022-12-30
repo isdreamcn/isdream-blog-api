@@ -33,6 +33,7 @@ export class ArticleController {
 
   @Get('/:id')
   async findArticle(@Param('id') id: number) {
+    await this.articleService.addArticleViews(id);
     const data = await this.articleService.findArticle(id);
     return {
       data,

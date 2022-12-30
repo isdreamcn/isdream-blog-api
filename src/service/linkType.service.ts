@@ -70,10 +70,11 @@ export class LinkTypeService {
     };
   }
 
-  async findLinkTypeAll() {
-    return await this.linkTypeModel.find({
-      relations: ['links'],
-    });
+  async findLinkTypeMain() {
+    return await this.linkTypeModel
+      .createQueryBuilder('linkType')
+      .leftJoinAndSelect('linkType.links', 'links', 'links.dead = 0')
+      .getMany();
   }
 
   async findLinkTypeSelect() {

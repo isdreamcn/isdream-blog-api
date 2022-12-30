@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { Link } from '../entity/link';
 import { LinkTypeService } from './linkType.service';
 import { FieldRequiredError, NotFountHttpError } from '../error/custom.error';
+import { toBoolean } from '../utils';
 
 export interface ILinkData extends Partial<Omit<Link, 'type'>> {
   type?: number;
@@ -47,14 +48,9 @@ export class LinkService {
     });
   }
 
-  async deleteLink(id: number) {
-    const link = await this.findLink(id);
-    return await this.linkModel.softRemove(link);
-  }
-
   async updateLink(
     id: number,
-    { title, description, link, icon, type }: ILinkData
+    { title, description, link, icon, type, dead }: ILinkData
   ) {
     const linkEntity = await this.findLink(id);
     const _type = type
@@ -67,19 +63,29 @@ export class LinkService {
       description,
       link,
       icon,
+      dead: toBoolean(dead),
       type: _type,
     });
   }
 
-  async findLinkList(page: number, pageSize: number, q: string) {
-    const queryBuilder = this.linkModel
+  async findLinkList(
+    page: number,
+    pageSize: number,
+    q: string,
+    dead?: boolean
+  ) {
+    let queryBuilder = this.linkModel
       .createQueryBuilder('link')
       .leftJoinAndSelect('link.type', 'type')
-      .where('link.title LIKE :title OR link.description LIKE :description')
+      .where('(link.title LIKE :title OR link.description LIKE :description)')
       .setParameters({
         title: `%${q}%`,
         description: `%${q}%`,
       });
+
+    if (dead !== undefined) {
+      queryBuilder = queryBuilder.andWhere('link.dead = :dead', { dead });
+    }
 
     const data = await queryBuilder
       .addOrderBy('link.createdAt', 'DESC')

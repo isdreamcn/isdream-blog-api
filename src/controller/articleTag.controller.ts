@@ -54,9 +54,17 @@ export class articleTagController {
     return await this.articleTagService.findArticleTagList(page, pageSize, q);
   }
 
-  @Get('/all')
+  @Get('/main')
   async findArticleTagAll() {
-    const data = await this.articleTagService.findArticleTagAll();
+    const data = await this.articleTagService.findArticleTagMain();
+    return {
+      data,
+    };
+  }
+
+  @Get('/select')
+  async findArticleTagSelect() {
+    const data = await this.articleTagService.findArticleTagSelect();
     return {
       data,
     };

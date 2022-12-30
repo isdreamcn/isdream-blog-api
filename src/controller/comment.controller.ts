@@ -53,4 +53,26 @@ export class CommentController {
   async approveComment(@Param('id') id: number) {
     await this.commentService.approveComment(id);
   }
+
+  @Get('/main')
+  async findCommentMain(
+    @Query('page') page = 1,
+    @Query('pageSize') pageSize = 10,
+    @Query('article') article?: number
+  ) {
+    return await this.commentService.findCommentMain(page, pageSize, article);
+  }
+
+  @Get('/reply')
+  async findCommentReply(
+    @Query('page') page = 1,
+    @Query('pageSize') pageSize = 10,
+    @Query('parentComment') parentComment?: number
+  ) {
+    return await this.commentService.findCommentReply(
+      page,
+      pageSize,
+      parentComment
+    );
+  }
 }

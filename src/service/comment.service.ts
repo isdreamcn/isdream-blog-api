@@ -11,10 +11,10 @@ import {
 } from '../error/custom.error';
 
 export interface ICommentData
-  extends Partial<Omit<Comment, 'article' | 'user' | 'replyComment'>> {
+  extends Partial<Omit<Comment, 'article' | 'user' | 'parentComment'>> {
   article?: number;
   user?: number;
-  replyComment?: number;
+  parentComment?: number;
 }
 
 @Provide()
@@ -33,7 +33,7 @@ export class CommentService {
       where: {
         id,
       },
-      relations: ['article', 'user', 'replyComment'],
+      relations: ['article', 'user', 'parentComment'],
     });
 
     if (!comment) {
@@ -43,7 +43,7 @@ export class CommentService {
     return comment;
   }
 
-  async createComment({ comment, article, user, replyComment }: ICommentData) {
+  async createComment({ content, article, user, parentComment }: ICommentData) {
     if (article === undefined) {
       throw new FieldRequiredError('article');
     }
@@ -54,19 +54,19 @@ export class CommentService {
 
     const _article = await this.articleService.findArticle(article);
     const _user = await this.userService.findUser(user);
-    const _replyComment = replyComment
-      ? await this.findComment(replyComment)
+    const _parentComment = parentComment
+      ? await this.findComment(parentComment)
       : undefined;
 
-    if (_replyComment && _replyComment.replyComment) {
+    if (_parentComment && _parentComment.parentComment) {
       throw new ParameterError('只能回复一级评论');
     }
 
     return await this.commentModel.save({
-      comment,
+      content,
       article: _article,
       user: _user,
-      replyComment: _replyComment,
+      parentComment: _parentComment,
     });
   }
 
@@ -110,5 +110,56 @@ export class CommentService {
       ...comment,
       approved: true,
     });
+  }
+
+  async findCommentReply(
+    page: number,
+    pageSize: number,
+    parentComment: number
+  ) {
+    const queryBuilder = this.commentModel
+      .createQueryBuilder('commnet')
+      .where('commnet.parentComment = :parentComment')
+      .setParameters({
+        parentComment,
+      });
+
+    const data = await queryBuilder
+      .select(['id', 'content'])
+      .skip((page - 1) * pageSize)
+      .take(pageSize)
+      .getRawMany();
+
+    const count = await queryBuilder.getCount();
+
+    return {
+      data,
+      count,
+    };
+  }
+
+  async findCommentMain(page: number, pageSize: number, article?: number) {
+    if (article === undefined) {
+      throw new FieldRequiredError('article');
+    }
+
+    const queryBuilder = this.commentModel
+      .createQueryBuilder('commnet')
+      .where('commnet.approved = 1 AND commnet.parentComment IS NULL')
+      .andWhere('commnet.article = :article')
+      .setParameters({
+        article,
+      });
+    const data = await queryBuilder
+      .skip((page - 1) * pageSize)
+      .take(pageSize)
+      .getMany();
+
+    const count = await queryBuilder.getCount();
+
+    return {
+      data,
+      count,
+    };
   }
 }

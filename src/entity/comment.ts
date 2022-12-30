@@ -7,9 +7,9 @@ import {
   DeleteDateColumn,
   ManyToOne,
   JoinColumn,
-  OneToOne,
   ManyToMany,
   JoinTable,
+  OneToMany,
 } from 'typeorm';
 import { User } from './user';
 import { Article } from './article';
@@ -20,7 +20,7 @@ export class Comment {
   id: number;
 
   @Column()
-  comment: string;
+  content: string;
 
   @Column({
     default: false,
@@ -55,9 +55,12 @@ export class Comment {
   @JoinColumn()
   article: Article;
 
-  @OneToOne(() => Comment)
+  @ManyToOne(() => Comment, comment => comment.replies)
   @JoinColumn()
-  replyComment: Comment;
+  parentComment: Comment;
+
+  @OneToMany(() => Comment, comment => comment.parentComment)
+  replies: Comment[];
 
   @ManyToMany(() => User, user => user.likedComments, {
     cascade: true,

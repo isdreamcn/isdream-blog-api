@@ -79,7 +79,7 @@ export class ArticleTagService {
     };
   }
 
-  async findArticleTagAll() {
+  async findArticleTagMain() {
     return await this.articleTagModel
       .createQueryBuilder('articleTag')
       .loadRelationCountAndMap('articleTag.articleCount', 'articleTag.articles')
@@ -88,5 +88,9 @@ export class ArticleTagService {
       .groupBy('articleTag.id')
       .orderBy('count', 'DESC')
       .getMany();
+  }
+
+  async findArticleTagSelect() {
+    return await this.articleTagModel.find({});
   }
 }
