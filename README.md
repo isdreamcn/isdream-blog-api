@@ -1,10 +1,11 @@
-# my_midway_project
+# isdream-blog-api
 
-## QuickStart
-
-<!-- add docs here for user -->
-
-see [midway docs][midway] for more detail.
+## 生成私钥
+- 进入 ./keys
+- 执行
+```bash
+ssh-keygen -t rsa -b 2048 -f private.key
+```
 
 ### Development
 
@@ -24,6 +25,3 @@ $ npm start
 
 - Use `npm run lint` to check code style.
 - Use `npm test` to run unit test.
-
-
-[midway]: https://midwayjs.org

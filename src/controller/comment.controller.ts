@@ -8,15 +8,25 @@ import {
   Post,
   Query,
 } from '@midwayjs/decorator';
+import { Context } from '@midwayjs/koa';
 import { CommentService, ICommentData } from '../service/comment.service';
+import { JwtMiddleware } from '../middleware/jwt.middleware';
 
 @Controller('/comment')
 export class CommentController {
   @Inject()
   commentService: CommentService;
 
-  @Post()
+  @Inject()
+  ctx: Context;
+
+  @Post('/', {
+    middleware: [JwtMiddleware],
+  })
   async createComment(@Body() comment: ICommentData) {
+    const user = this.ctx.user;
+    comment.user = user.id;
+
     await this.commentService.createComment(comment);
   }
 

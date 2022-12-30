@@ -1,4 +1,6 @@
 import { MidwayConfig } from '@midwayjs/core';
+import { join } from 'path';
+import { readFileSync } from 'fs';
 
 export default {
   // use for cookie sign key, should change to your own and keep security
@@ -6,6 +8,10 @@ export default {
   koa: {
     port: 7001,
     globalPrefix: '/v1',
+  },
+  jwt: {
+    secret: readFileSync(join(__dirname, '../../keys/private.key')) as any,
+    expiresIn: '30d', // https://github.com/vercel/ms
   },
   typeorm: {
     dataSource: {

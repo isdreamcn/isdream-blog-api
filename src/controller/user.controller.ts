@@ -10,9 +10,13 @@ import {
   Query,
 } from '@midwayjs/decorator';
 import { UserService, IUserData } from '../service/user.service';
+import { JwtService } from '@midwayjs/jwt';
 
 @Controller('/user')
 export class UserController {
+  @Inject()
+  jwtService: JwtService;
+
   @Inject()
   userService: UserService;
 
@@ -51,8 +55,12 @@ export class UserController {
   @Post('/login')
   async loginUser(@Body() user: IUserData) {
     const data = await this.userService.loginUser(user);
+
     return {
       data,
+      token: this.jwtService.signSync({
+        ...data,
+      }),
     };
   }
 }

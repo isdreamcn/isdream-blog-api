@@ -1,6 +1,7 @@
 import { Configuration, App } from '@midwayjs/decorator';
 import * as koa from '@midwayjs/koa';
 import * as orm from '@midwayjs/typeorm';
+import * as jwt from '@midwayjs/jwt';
 import * as dotenv from 'dotenv';
 import * as validate from '@midwayjs/validate';
 import * as info from '@midwayjs/info';
@@ -10,6 +11,7 @@ import { DefaultErrorFilter } from './filter/default.filter';
 import { NotFoundFilter } from './filter/notfound.filter';
 import { ReportMiddleware } from './middleware/report.middleware';
 import { FormatMiddleware } from './middleware/format.middleware';
+import { VerifyRootMiddleware } from './middleware/verifyRoot.middleware';
 
 // load .env file
 dotenv.config();
@@ -24,6 +26,7 @@ for (const k in config) {
   imports: [
     koa,
     orm,
+    jwt,
     validate,
     {
       component: info,
@@ -38,7 +41,11 @@ export class ContainerLifeCycle {
 
   async onReady() {
     // add middleware
-    this.app.useMiddleware([ReportMiddleware, FormatMiddleware]);
+    this.app.useMiddleware([
+      ReportMiddleware,
+      VerifyRootMiddleware,
+      FormatMiddleware,
+    ]);
     // add filter
     this.app.useFilter([NotFoundFilter, DefaultErrorFilter]);
   }
