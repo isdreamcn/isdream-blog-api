@@ -17,6 +17,17 @@ export interface ICommentData
   parentComment?: number;
 }
 
+interface IFindCommentMainData {
+  page: number;
+  pageSize: number;
+  sort: number;
+  user?: number;
+  article?: number;
+}
+interface IFindCommentReplyData extends IFindCommentMainData {
+  parentComment?: number;
+}
+
 @Provide()
 export class CommentService {
   @InjectEntityModel(Comment)
@@ -33,7 +44,13 @@ export class CommentService {
       where: {
         id,
       },
-      relations: ['article', 'user', 'parentComment'],
+      relations: [
+        'article',
+        'user',
+        'parentComment',
+        'likedUsers',
+        'dislikedUsers',
+      ],
     });
 
     if (!comment) {
@@ -112,25 +129,89 @@ export class CommentService {
     });
   }
 
-  async findCommentReply(
-    page: number,
-    pageSize: number,
-    parentComment: number
-  ) {
-    const queryBuilder = this.commentModel
-      .createQueryBuilder('commnet')
-      .where('commnet.parentComment = :parentComment')
-      .setParameters({
-        parentComment,
-      });
+  async findCommentLikedAndDisliked(comment: number, user: number) {
+    const liked = await this.commentModel
+      .createQueryBuilder('comment')
+      .leftJoin('comment.likedUsers', 'likedUser')
+      .where('comment.id = :comment AND likedUser.id = :user', {
+        comment,
+        user,
+      })
+      .getOne();
 
-    const data = await queryBuilder
-      .select(['id', 'content'])
-      .skip((page - 1) * pageSize)
-      .take(pageSize)
-      .getRawMany();
+    const disliked = await this.commentModel
+      .createQueryBuilder('comment')
+      .leftJoin('comment.dislikedUsers', 'dislikedUser')
+      .where('comment.id = :comment AND dislikedUser.id = :user', {
+        comment,
+        user,
+      })
+      .getOne();
+
+    return {
+      liked: !!liked,
+      disliked: !!disliked,
+    };
+  }
+
+  async findCommentReply({
+    page,
+    pageSize,
+    sort,
+    parentComment,
+    user,
+    article,
+  }: IFindCommentReplyData) {
+    let queryBuilder = this.commentModel
+      .createQueryBuilder('comment')
+      .where('comment.approved = 1');
+
+    queryBuilder = queryBuilder.andWhere(
+      parentComment
+        ? 'comment.parentComment = :parentComment'
+        : 'comment.parentComment IS NUll',
+      {
+        parentComment,
+      }
+    );
+
+    if (article) {
+      queryBuilder.andWhere('comment.article = :article', {
+        article,
+      });
+    }
 
     const count = await queryBuilder.getCount();
+
+    queryBuilder = queryBuilder
+      .loadRelationCountAndMap('comment.likedCount', 'comment.likedUsers')
+      .leftJoinAndSelect('comment.user', 'user')
+      .addSelect('COUNT(likedUser.id) as likedCount')
+      .leftJoin('comment.likedUsers', 'likedUser')
+      .groupBy('comment.id');
+
+    if (sort === 1) {
+      queryBuilder = queryBuilder.orderBy('likedCount', 'DESC');
+    } else if (sort === 2) {
+      queryBuilder = queryBuilder.orderBy('comment.createdAt', 'DESC');
+    }
+
+    let data = await queryBuilder
+      .skip((page - 1) * pageSize)
+      .take(pageSize)
+      .getMany();
+
+    if (user) {
+      data = await Promise.all(
+        data.map(async item => {
+          const res = await this.findCommentLikedAndDisliked(item.id, user);
+          return {
+            ...item,
+            ...res,
+          };
+        })
+      );
+    }
 
     return {
       data,
@@ -138,28 +219,68 @@ export class CommentService {
     };
   }
 
-  async findCommentMain(page: number, pageSize: number, article?: number) {
+  async findCommentMain({
+    page,
+    pageSize,
+    sort,
+    article,
+    user,
+  }: IFindCommentMainData) {
     if (article === undefined) {
       throw new FieldRequiredError('article');
     }
 
-    const queryBuilder = this.commentModel
-      .createQueryBuilder('commnet')
-      .where('commnet.approved = 1 AND commnet.parentComment IS NULL')
-      .andWhere('commnet.article = :article')
-      .setParameters({
-        article,
-      });
-    const data = await queryBuilder
-      .skip((page - 1) * pageSize)
-      .take(pageSize)
-      .getMany();
+    const { data: _data, count } = await this.findCommentReply({
+      page,
+      pageSize,
+      sort,
+      user,
+      article,
+    });
 
-    const count = await queryBuilder.getCount();
+    const data = await Promise.all(
+      _data.map(async item => {
+        const replys = await this.findCommentReply({
+          page: 1,
+          pageSize: 2,
+          sort,
+          parentComment: item.id,
+          user,
+        });
+        return {
+          ...item,
+          replys,
+        };
+      })
+    );
 
     return {
       data,
       count,
     };
+  }
+
+  async commentLike(id: number, userId: number) {
+    const comment = await this.findComment(id);
+    comment.dislikedUsers = comment.dislikedUsers.filter(
+      user => user.id !== userId
+    );
+    let user = comment.likedUsers.find(user => user.id === userId);
+    if (!user) {
+      user = await this.userService.findUser(userId);
+      comment.likedUsers.push(user);
+    }
+    return await this.commentModel.save(comment);
+  }
+
+  async commentDislike(id: number, userId: number) {
+    const comment = await this.findComment(id);
+    comment.likedUsers = comment.likedUsers.filter(user => user.id !== userId);
+    let user = comment.dislikedUsers.find(user => user.id === userId);
+    if (!user) {
+      user = await this.userService.findUser(userId);
+      comment.dislikedUsers.push(user);
+    }
+    return await this.commentModel.save(comment);
   }
 }

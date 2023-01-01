@@ -67,4 +67,10 @@ export class Comment {
   })
   @JoinTable()
   likedUsers: User[];
+
+  @ManyToMany(() => User, user => user.dislikedComments, {
+    cascade: true,
+  })
+  @JoinTable()
+  dislikedUsers: User[];
 }

@@ -68,22 +68,46 @@ export class CommentController {
   async findCommentMain(
     @Query('page') page = 1,
     @Query('pageSize') pageSize = 10,
+    // 1 按热度（likedCount）2 按时间
+    @Query('sort') sort?: number,
     @Query('article') article?: number
   ) {
-    return await this.commentService.findCommentMain(page, pageSize, article);
+    return await this.commentService.findCommentMain({
+      page,
+      pageSize,
+      article,
+      sort: sort || 1,
+      user: this.ctx.user?.id,
+    });
   }
 
-  @Role(['login'])
+  @Role(['pc'])
   @Get('/reply')
   async findCommentReply(
     @Query('page') page = 1,
     @Query('pageSize') pageSize = 10,
+    // 1 按热度（likedCount）2 按时间
+    @Query('sort') sort = 1,
     @Query('parentComment') parentComment?: number
   ) {
-    return await this.commentService.findCommentReply(
+    return await this.commentService.findCommentReply({
       page,
       pageSize,
-      parentComment
-    );
+      sort,
+      parentComment,
+      user: this.ctx.user?.id,
+    });
+  }
+
+  @Role(['login'])
+  @Post('/like/:id')
+  async commentLike(@Param('id') id: number) {
+    await this.commentService.commentLike(id, this.ctx.user.id);
+  }
+
+  @Role(['login'])
+  @Post('/dislike/:id')
+  async commentDislike(@Param('id') id: number) {
+    await this.commentService.commentDislike(id, this.ctx.user.id);
   }
 }

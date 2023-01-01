@@ -54,4 +54,7 @@ export class User {
 
   @ManyToMany(() => Comment, comment => comment.likedUsers)
   likedComments: Comment[];
+
+  @ManyToMany(() => Comment, comment => comment.dislikedUsers)
+  dislikedComments: Comment[];
 }
