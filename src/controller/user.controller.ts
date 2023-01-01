@@ -11,6 +11,7 @@ import {
 } from '@midwayjs/decorator';
 import { UserService, IUserData } from '../service/user.service';
 import { JwtService } from '@midwayjs/jwt';
+import { Role } from '../decorator/role.decorator';
 
 @Controller('/user')
 export class UserController {
@@ -52,6 +53,7 @@ export class UserController {
     return await this.userService.findUserList(page, pageSize, q);
   }
 
+  @Role(['pc'])
   @Post('/login')
   async loginUser(@Body() user: IUserData) {
     const data = await this.userService.loginUser(user);

@@ -10,6 +10,7 @@ import {
   Query,
 } from '@midwayjs/decorator';
 import { ArticleService, IArticleData } from '../service/article.service';
+import { Role } from '../decorator/role.decorator';
 
 @Controller('/article')
 export class ArticleController {
@@ -31,6 +32,7 @@ export class ArticleController {
     await this.articleService.updateArticle(id, article);
   }
 
+  @Role(['pc'])
   @Get('/:id')
   async findArticle(@Param('id') id: number) {
     await this.articleService.addArticleViews(id);
@@ -40,6 +42,7 @@ export class ArticleController {
     };
   }
 
+  @Role(['pc'])
   @Get()
   async findArticleList(
     @Query('page') page = 1,

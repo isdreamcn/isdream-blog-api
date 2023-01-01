@@ -13,6 +13,7 @@ import {
   ArticleTagService,
   IArticleTagData,
 } from '../service/articleTag.service';
+import { Role } from '../decorator/role.decorator';
 
 @Controller('/article_tag')
 export class articleTagController {
@@ -54,6 +55,7 @@ export class articleTagController {
     return await this.articleTagService.findArticleTagList(page, pageSize, q);
   }
 
+  @Role(['pc'])
   @Get('/main')
   async findArticleTagAll() {
     const data = await this.articleTagService.findArticleTagMain();

@@ -1,8 +1,8 @@
 import { Inject, Middleware } from '@midwayjs/decorator';
 import { Context, NextFunction } from '@midwayjs/koa';
-import { httpError } from '@midwayjs/core';
 import { JwtService } from '@midwayjs/jwt';
 
+// 解析token
 @Middleware()
 export class JwtMiddleware {
   @Inject()
@@ -16,13 +16,13 @@ export class JwtMiddleware {
     return async (ctx: Context, next: NextFunction) => {
       // 判断下有没有校验信息
       if (!ctx.headers['authorization']) {
-        throw new httpError.UnauthorizedError();
+        return await next();
       }
       // 从 header 上获取校验信息
       const parts = ctx.get('authorization').trim().split(' ');
 
       if (parts.length !== 2) {
-        throw new httpError.UnauthorizedError();
+        return await next();
       }
 
       const [scheme, token] = parts;
@@ -31,9 +31,9 @@ export class JwtMiddleware {
         try {
           ctx.user = this.jwtService.decodeSync(token);
         } catch (error) {
-          throw new httpError.UnauthorizedError();
+          return await next();
         }
-        await next();
+        return await next();
       }
     };
   }

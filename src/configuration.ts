@@ -11,7 +11,8 @@ import { DefaultErrorFilter } from './filter/default.filter';
 import { NotFoundFilter } from './filter/notfound.filter';
 import { ReportMiddleware } from './middleware/report.middleware';
 import { FormatMiddleware } from './middleware/format.middleware';
-import { VerifyRootMiddleware } from './middleware/verifyRoot.middleware';
+import { JwtMiddleware } from './middleware/jwt.middleware';
+import { AuthGuard } from './guard/auth.guard';
 
 // load .env file
 dotenv.config();
@@ -41,12 +42,10 @@ export class ContainerLifeCycle {
 
   async onReady() {
     // add middleware
-    this.app.useMiddleware([
-      ReportMiddleware,
-      VerifyRootMiddleware,
-      FormatMiddleware,
-    ]);
+    this.app.useMiddleware([ReportMiddleware, JwtMiddleware, FormatMiddleware]);
     // add filter
     this.app.useFilter([NotFoundFilter, DefaultErrorFilter]);
+    // add guard
+    this.app.useGuard([AuthGuard]);
   }
 }

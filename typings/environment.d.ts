@@ -9,8 +9,8 @@ declare global {
       MYSQL_USERNAME: string
       MYSQL_PASSWORD: string
       MYSQL_DATABASE: string
-      ROOT: string
-      ROOT_PASSWORD: string
+      ADMIN: string
+      ADMIN_PASSWORD: string
     }
   }
 }

@@ -10,6 +10,7 @@ import {
   Query,
 } from '@midwayjs/decorator';
 import { LinkTypeService, ILinkTypeData } from '../service/linkType.service';
+import { Role } from '../decorator/role.decorator';
 
 @Controller('/link_type')
 export class LinkTypeController {
@@ -51,6 +52,7 @@ export class LinkTypeController {
     return await this.linkTypeService.findLinkTypeList(page, pageSize, q);
   }
 
+  @Role(['pc'])
   @Get('/main')
   async findLinkTypeMain() {
     const data = await this.linkTypeService.findLinkTypeMain();

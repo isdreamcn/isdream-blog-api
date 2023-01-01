@@ -10,7 +10,7 @@ import {
 } from '@midwayjs/decorator';
 import { Context } from '@midwayjs/koa';
 import { CommentService, ICommentData } from '../service/comment.service';
-import { JwtMiddleware } from '../middleware/jwt.middleware';
+import { Role } from '../decorator/role.decorator';
 
 @Controller('/comment')
 export class CommentController {
@@ -20,9 +20,8 @@ export class CommentController {
   @Inject()
   ctx: Context;
 
-  @Post('/', {
-    middleware: [JwtMiddleware],
-  })
+  @Role(['login'])
+  @Post('/')
   async createComment(@Body() comment: ICommentData) {
     const user = this.ctx.user;
     comment.user = user.id;
@@ -64,6 +63,7 @@ export class CommentController {
     await this.commentService.approveComment(id);
   }
 
+  @Role(['pc'])
   @Get('/main')
   async findCommentMain(
     @Query('page') page = 1,
@@ -73,6 +73,7 @@ export class CommentController {
     return await this.commentService.findCommentMain(page, pageSize, article);
   }
 
+  @Role(['login'])
   @Get('/reply')
   async findCommentReply(
     @Query('page') page = 1,
