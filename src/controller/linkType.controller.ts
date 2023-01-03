@@ -9,7 +9,10 @@ import {
   Get,
   Query,
 } from '@midwayjs/decorator';
-import { LinkTypeService, ILinkTypeData } from '../service/linkType.service';
+import { Validate } from '@midwayjs/validate';
+import { LinkTypeDTO } from '../dto/linkType';
+import { CommonFindListDTO } from '../dto/common';
+import { LinkTypeService } from '../service/linkType.service';
 import { Role } from '../decorator/role.decorator';
 
 @Controller('/link_type')
@@ -18,7 +21,8 @@ export class LinkTypeController {
   linkTypeService: LinkTypeService;
 
   @Post()
-  async createLinkType(@Body() linkType: ILinkTypeData) {
+  @Validate()
+  async createLinkType(@Body() linkType: LinkTypeDTO) {
     await this.linkTypeService.createLinkType(linkType);
   }
 
@@ -28,10 +32,8 @@ export class LinkTypeController {
   }
 
   @Put('/:id')
-  async updateLinkType(
-    @Param('id') id: number,
-    @Body() linkType: ILinkTypeData
-  ) {
+  @Validate()
+  async updateLinkType(@Param('id') id: number, @Body() linkType: LinkTypeDTO) {
     await this.linkTypeService.updateLinkType(id, linkType);
   }
 
@@ -44,12 +46,9 @@ export class LinkTypeController {
   }
 
   @Get()
-  async findLinkTypeList(
-    @Query('page') page = 1,
-    @Query('pageSize') pageSize = 10,
-    @Query('q') q = ''
-  ) {
-    return await this.linkTypeService.findLinkTypeList(page, pageSize, q);
+  @Validate()
+  async findLinkTypeList(@Query() query: CommonFindListDTO) {
+    return await this.linkTypeService.findLinkTypeList(query);
   }
 
   @Role(['pc'])

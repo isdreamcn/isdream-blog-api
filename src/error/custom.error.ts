@@ -6,12 +6,6 @@ export class NotFountHttpError extends MidwayHttpError {
   }
 }
 
-export class FieldRequiredError extends MidwayHttpError {
-  constructor(field) {
-    super(`字段${field}必须填写`, HttpStatus.BAD_REQUEST);
-  }
-}
-
 export class ParameterError extends MidwayHttpError {
   constructor(message: string) {
     super(message ?? '参数错误', HttpStatus.BAD_REQUEST);

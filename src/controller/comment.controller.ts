@@ -9,8 +9,15 @@ import {
   Query,
 } from '@midwayjs/decorator';
 import { Context } from '@midwayjs/koa';
-import { CommentService, ICommentData } from '../service/comment.service';
+import { Validate } from '@midwayjs/validate';
 import { Role } from '../decorator/role.decorator';
+import {
+  CommentDTO,
+  CommentFindListDTO,
+  CommentFindMainDTO,
+  CommentFindReplyDTO,
+} from '../dto/comment';
+import { CommentService } from '../service/comment.service';
 
 @Controller('/comment')
 export class CommentController {
@@ -22,11 +29,9 @@ export class CommentController {
 
   @Role(['login'])
   @Post('/')
-  async createComment(@Body() comment: ICommentData) {
-    const user = this.ctx.user;
-    comment.user = user.id;
-
-    await this.commentService.createComment(comment);
+  @Validate()
+  async createComment(@Body() comment: CommentDTO) {
+    await this.commentService.createComment(comment, this.ctx.user.id);
   }
 
   @Del('/:id')
@@ -43,18 +48,9 @@ export class CommentController {
   }
 
   @Get()
-  async findCommentList(
-    @Query('page') page = 1,
-    @Query('pageSize') pageSize = 10,
-    @Query('q') q = '',
-    @Query('approved') approved?: boolean
-  ) {
-    return await this.commentService.findCommentList(
-      page,
-      pageSize,
-      q,
-      approved
-    );
+  @Validate()
+  async findCommentList(@Query() query: CommentFindListDTO) {
+    return await this.commentService.findCommentList(query);
   }
 
   // 显示评论
@@ -65,38 +61,16 @@ export class CommentController {
 
   @Role(['pc'])
   @Get('/main')
-  async findCommentMain(
-    @Query('page') page = 1,
-    @Query('pageSize') pageSize = 10,
-    // 1 按热度（likedCount）2 按时间
-    @Query('sort') sort?: number,
-    @Query('article') article?: number
-  ) {
-    return await this.commentService.findCommentMain({
-      page,
-      pageSize,
-      article,
-      sort: sort || 1,
-      user: this.ctx.user?.id,
-    });
+  @Validate()
+  async findCommentMain(@Query() query: CommentFindMainDTO) {
+    return await this.commentService.findCommentMain(query, this.ctx.user?.id);
   }
 
   @Role(['pc'])
   @Get('/reply')
-  async findCommentReply(
-    @Query('page') page = 1,
-    @Query('pageSize') pageSize = 10,
-    // 1 按热度（likedCount）2 按时间
-    @Query('sort') sort = 1,
-    @Query('parentComment') parentComment?: number
-  ) {
-    return await this.commentService.findCommentReply({
-      page,
-      pageSize,
-      sort,
-      parentComment,
-      user: this.ctx.user?.id,
-    });
+  @Validate()
+  async findCommentReply(@Query() query: CommentFindReplyDTO) {
+    return await this.commentService.findCommentReply(query, this.ctx.user?.id);
   }
 
   @Role(['login'])

@@ -3,8 +3,9 @@ import { InjectEntityModel } from '@midwayjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../entity/user';
 import { NotFountHttpError } from '../error/custom.error';
+import { UserDTO, UserLoginDTO } from '../dto/user';
+import { CommonFindListDTO } from '../dto/common';
 
-export type IUserData = Partial<User>;
 @Provide()
 export class UserService {
   @InjectEntityModel(User)
@@ -24,7 +25,7 @@ export class UserService {
     return user;
   }
 
-  async createUser({ email, username, avatar, website }: IUserData) {
+  async createUser({ email, username, avatar, website }: UserDTO) {
     return await this.userModel.save({
       email,
       username,
@@ -38,10 +39,7 @@ export class UserService {
     return await this.userModel.softRemove(user);
   }
 
-  async updateUser(
-    id: number,
-    { email, username, avatar, website }: IUserData
-  ) {
+  async updateUser(id: number, { email, username, avatar, website }: UserDTO) {
     const user = await this.findUser(id);
     return await this.userModel.save({
       ...user,
@@ -52,7 +50,7 @@ export class UserService {
     });
   }
 
-  async findUserList(page: number, pageSize: number, q: string) {
+  async findUserList({ page, pageSize, q }: CommonFindListDTO) {
     const queryBuilder = this.userModel
       .createQueryBuilder('user')
       .where('user.email LIKE :email OR user.username LIKE :username')
@@ -74,7 +72,7 @@ export class UserService {
     };
   }
 
-  async loginUser(userData: IUserData) {
+  async loginUser(userData: UserLoginDTO) {
     const { email } = userData;
     let user = await this.userModel.findOne({
       where: {
@@ -82,10 +80,12 @@ export class UserService {
       },
     });
 
-    if (!user) {
-      user = await this.createUser(userData);
-    } else {
-      user = await this.updateUser(user.id, userData);
+    if (userData.username) {
+      if (!user) {
+        user = await this.createUser(userData as UserDTO);
+      } else {
+        user = await this.updateUser(user.id, userData as UserDTO);
+      }
     }
 
     return await this.findUser(user.id);

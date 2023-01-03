@@ -9,7 +9,10 @@ import {
   Get,
   Query,
 } from '@midwayjs/decorator';
-import { UserService, IUserData } from '../service/user.service';
+import { Validate } from '@midwayjs/validate';
+import { UserDTO, UserLoginDTO } from '../dto/user';
+import { CommonFindListDTO } from '../dto/common';
+import { UserService } from '../service/user.service';
 import { JwtService } from '@midwayjs/jwt';
 import { Role } from '../decorator/role.decorator';
 
@@ -22,7 +25,8 @@ export class UserController {
   userService: UserService;
 
   @Post()
-  async createUser(@Body() user: IUserData) {
+  @Validate()
+  async createUser(@Body() user: UserDTO) {
     await this.userService.createUser(user);
   }
 
@@ -32,7 +36,8 @@ export class UserController {
   }
 
   @Put('/:id')
-  async updateUser(@Param('id') id: number, @Body() user: IUserData) {
+  @Validate()
+  async updateUser(@Param('id') id: number, @Body() user: UserDTO) {
     await this.userService.updateUser(id, user);
   }
 
@@ -45,17 +50,15 @@ export class UserController {
   }
 
   @Get()
-  async findUserList(
-    @Query('page') page = 1,
-    @Query('pageSize') pageSize = 10,
-    @Query('q') q = ''
-  ) {
-    return await this.userService.findUserList(page, pageSize, q);
+  @Validate()
+  async findUserList(@Query() query: CommonFindListDTO) {
+    return await this.userService.findUserList(query);
   }
 
   @Role(['pc'])
   @Post('/login')
-  async loginUser(@Body() user: IUserData) {
+  @Validate()
+  async loginUser(@Body() user: UserLoginDTO) {
     const data = await this.userService.loginUser(user);
 
     return {

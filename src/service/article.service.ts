@@ -2,13 +2,10 @@ import { Inject, Provide } from '@midwayjs/decorator';
 import { InjectEntityModel } from '@midwayjs/typeorm';
 import { Repository } from 'typeorm';
 import { Article } from '../entity/article';
+import { ArticleDTO } from '../dto/article';
+import { CommonFindListDTO } from '../dto/common';
 import { NotFountHttpError } from '../error/custom.error';
-import { toBoolean } from '../utils';
 import { ArticleTagService } from './articleTag.service';
-
-export interface IArticleData extends Partial<Omit<Article, 'tags'>> {
-  tags?: number[];
-}
 
 @Provide()
 export class ArticleService {
@@ -43,14 +40,14 @@ export class ArticleService {
     isCommented,
     isTop,
     tags,
-  }: IArticleData) {
+  }: ArticleDTO) {
     const _tags = await this.articleTagService.findArticleTags(tags);
 
     return await this.articleModel.save({
       title,
       content,
-      isCommented: toBoolean(isCommented),
-      isTop: toBoolean(isTop),
+      isCommented,
+      isTop,
       tags: _tags,
     });
   }
@@ -62,7 +59,7 @@ export class ArticleService {
 
   async updateArticle(
     id: number,
-    { title, content, isCommented, isTop, tags }: IArticleData
+    { title, content, isCommented, isTop, tags }: ArticleDTO
   ) {
     const article = await this.findArticle(id);
     const _tags = await this.articleTagService.findArticleTags(tags);
@@ -71,13 +68,13 @@ export class ArticleService {
       ...article,
       title,
       content,
-      isCommented: toBoolean(isCommented),
-      isTop: toBoolean(isTop),
+      isCommented,
+      isTop,
       tags: _tags,
     });
   }
 
-  async findArticleList(page: number, pageSize: number, q: string) {
+  async findArticleList({ page, pageSize, q }: CommonFindListDTO) {
     const queryBuilder = this.articleModel
       .createQueryBuilder('article')
       .leftJoinAndSelect('article.tags', 'tag')

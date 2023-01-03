@@ -3,8 +3,8 @@ import { InjectEntityModel } from '@midwayjs/typeorm';
 import { Repository } from 'typeorm';
 import { LinkType } from '../entity/linkType';
 import { NotFountHttpError } from '../error/custom.error';
-
-export type ILinkTypeData = Partial<LinkType>;
+import { LinkTypeDTO } from '../dto/linkType';
+import { CommonFindListDTO } from '../dto/common';
 
 @Provide()
 export class LinkTypeService {
@@ -25,7 +25,7 @@ export class LinkTypeService {
     return linkType;
   }
 
-  async createLinkType({ title, description }: ILinkTypeData) {
+  async createLinkType({ title, description }: LinkTypeDTO) {
     return await this.linkTypeModel.save({
       title,
       description,
@@ -37,7 +37,7 @@ export class LinkTypeService {
     return await this.linkTypeModel.remove(linkType);
   }
 
-  async updateLinkType(id: number, { title, description }: ILinkTypeData) {
+  async updateLinkType(id: number, { title, description }: LinkTypeDTO) {
     const linkType = await this.findLinkType(id);
     return await this.linkTypeModel.save({
       ...linkType,
@@ -46,7 +46,7 @@ export class LinkTypeService {
     });
   }
 
-  async findLinkTypeList(page: number, pageSize: number, q: string) {
+  async findLinkTypeList({ page, pageSize, q }: CommonFindListDTO) {
     const queryBuilder = this.linkTypeModel
       .createQueryBuilder('linkType')
       .where(

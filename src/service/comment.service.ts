@@ -4,29 +4,13 @@ import { Repository } from 'typeorm';
 import { Comment } from '../entity/comment';
 import { ArticleService } from './article.service';
 import { UserService } from './user.service';
+import { NotFountHttpError, ParameterError } from '../error/custom.error';
 import {
-  FieldRequiredError,
-  NotFountHttpError,
-  ParameterError,
-} from '../error/custom.error';
-
-export interface ICommentData
-  extends Partial<Omit<Comment, 'article' | 'user' | 'parentComment'>> {
-  article?: number;
-  user?: number;
-  parentComment?: number;
-}
-
-interface IFindCommentMainData {
-  page: number;
-  pageSize: number;
-  sort: number;
-  user?: number;
-  article?: number;
-}
-interface IFindCommentReplyData extends IFindCommentMainData {
-  parentComment?: number;
-}
+  CommentDTO,
+  CommentFindListDTO,
+  CommentFindMainDTO,
+  CommentFindReplyDTO,
+} from '../dto/comment';
 
 @Provide()
 export class CommentService {
@@ -60,15 +44,10 @@ export class CommentService {
     return comment;
   }
 
-  async createComment({ content, article, user, parentComment }: ICommentData) {
-    if (article === undefined) {
-      throw new FieldRequiredError('article');
-    }
-
-    if (user === undefined) {
-      throw new FieldRequiredError('user');
-    }
-
+  async createComment(
+    { content, article, parentComment }: CommentDTO,
+    user: number
+  ) {
     const _article = await this.articleService.findArticle(article);
     const _user = await this.userService.findUser(user);
     const _parentComment = parentComment
@@ -92,12 +71,7 @@ export class CommentService {
     return await this.commentModel.softRemove(comment);
   }
 
-  async findCommentList(
-    page: number,
-    pageSize: number,
-    q: string,
-    approved?: boolean
-  ) {
+  async findCommentList({ page, pageSize, q, approved }: CommentFindListDTO) {
     let queryBuilder = this.commentModel
       .createQueryBuilder('comment')
       .where('comment.comment LIKE :comment')
@@ -154,14 +128,11 @@ export class CommentService {
     };
   }
 
-  async findCommentReply({
-    page,
-    pageSize,
-    sort,
-    parentComment,
-    user,
-    article,
-  }: IFindCommentReplyData) {
+  async findCommentReply(
+    { page, pageSize, sort, parentComment }: CommentFindReplyDTO,
+    user?: number,
+    article?: number
+  ) {
     let queryBuilder = this.commentModel
       .createQueryBuilder('comment')
       .where('comment.approved = 1');
@@ -219,34 +190,32 @@ export class CommentService {
     };
   }
 
-  async findCommentMain({
-    page,
-    pageSize,
-    sort,
-    article,
-    user,
-  }: IFindCommentMainData) {
-    if (article === undefined) {
-      throw new FieldRequiredError('article');
-    }
-
-    const { data: _data, count } = await this.findCommentReply({
-      page,
-      pageSize,
-      sort,
+  async findCommentMain(
+    { page, pageSize, sort, article }: CommentFindMainDTO,
+    user?: number
+  ) {
+    const { data: _data, count } = await this.findCommentReply(
+      {
+        page,
+        pageSize,
+        sort,
+        parentComment: undefined,
+      },
       user,
-      article,
-    });
+      article
+    );
 
     const data = await Promise.all(
       _data.map(async item => {
-        const replys = await this.findCommentReply({
-          page: 1,
-          pageSize: 2,
-          sort,
-          parentComment: item.id,
-          user,
-        });
+        const replys = await this.findCommentReply(
+          {
+            page: 1,
+            pageSize: 2,
+            sort,
+            parentComment: item.id,
+          },
+          user
+        );
         return {
           ...item,
           replys,
@@ -266,7 +235,11 @@ export class CommentService {
       user => user.id !== userId
     );
     let user = comment.likedUsers.find(user => user.id === userId);
-    if (!user) {
+    if (user) {
+      comment.likedUsers = comment.likedUsers.filter(
+        user => user.id !== userId
+      );
+    } else {
       user = await this.userService.findUser(userId);
       comment.likedUsers.push(user);
     }
@@ -277,7 +250,11 @@ export class CommentService {
     const comment = await this.findComment(id);
     comment.likedUsers = comment.likedUsers.filter(user => user.id !== userId);
     let user = comment.dislikedUsers.find(user => user.id === userId);
-    if (!user) {
+    if (user) {
+      comment.dislikedUsers = comment.dislikedUsers.filter(
+        user => user.id !== userId
+      );
+    } else {
       user = await this.userService.findUser(userId);
       comment.dislikedUsers.push(user);
     }

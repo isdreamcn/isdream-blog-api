@@ -9,11 +9,11 @@ import {
   Put,
   Query,
 } from '@midwayjs/decorator';
-import {
-  ArticleTagService,
-  IArticleTagData,
-} from '../service/articleTag.service';
+import { Validate } from '@midwayjs/validate';
 import { Role } from '../decorator/role.decorator';
+import { ArticleTagDTO } from '../dto/articleTag';
+import { CommonFindListDTO } from '../dto/common';
+import { ArticleTagService } from '../service/articleTag.service';
 
 @Controller('/article_tag')
 export class articleTagController {
@@ -21,7 +21,8 @@ export class articleTagController {
   articleTagService: ArticleTagService;
 
   @Post()
-  async createArticleTag(@Body() articleTag: IArticleTagData) {
+  @Validate()
+  async createArticleTag(@Body() articleTag: ArticleTagDTO) {
     await this.articleTagService.createArticleTag(articleTag);
   }
 
@@ -31,9 +32,10 @@ export class articleTagController {
   }
 
   @Put('/:id')
+  @Validate()
   async updateArticleTag(
     @Param('id') id: number,
-    @Body() articleTag: IArticleTagData
+    @Body() articleTag: ArticleTagDTO
   ) {
     await this.articleTagService.updateArticleTag(id, articleTag);
   }
@@ -47,12 +49,9 @@ export class articleTagController {
   }
 
   @Get()
-  async findArticleTagList(
-    @Query('page') page = 1,
-    @Query('pageSize') pageSize = 10,
-    @Query('q') q = ''
-  ) {
-    return await this.articleTagService.findArticleTagList(page, pageSize, q);
+  @Validate()
+  async findArticleTagList(@Query() query: CommonFindListDTO) {
+    return await this.articleTagService.findArticleTagList(query);
   }
 
   @Role(['pc'])

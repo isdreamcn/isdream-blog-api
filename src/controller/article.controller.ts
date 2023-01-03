@@ -9,8 +9,11 @@ import {
   Put,
   Query,
 } from '@midwayjs/decorator';
-import { ArticleService, IArticleData } from '../service/article.service';
+import { Validate } from '@midwayjs/validate';
 import { Role } from '../decorator/role.decorator';
+import { ArticleDTO } from '../dto/article';
+import { CommonFindListDTO } from '../dto/common';
+import { ArticleService } from '../service/article.service';
 
 @Controller('/article')
 export class ArticleController {
@@ -18,7 +21,8 @@ export class ArticleController {
   articleService: ArticleService;
 
   @Post()
-  async createArticle(@Body() article: IArticleData) {
+  @Validate()
+  async createArticle(@Body() article: ArticleDTO) {
     await this.articleService.createArticle(article);
   }
 
@@ -28,7 +32,8 @@ export class ArticleController {
   }
 
   @Put('/:id')
-  async updateArticle(@Param('id') id: number, @Body() article: IArticleData) {
+  @Validate()
+  async updateArticle(@Param('id') id: number, @Body() article: ArticleDTO) {
     await this.articleService.updateArticle(id, article);
   }
 
@@ -44,11 +49,8 @@ export class ArticleController {
 
   @Role(['pc'])
   @Get()
-  async findArticleList(
-    @Query('page') page = 1,
-    @Query('pageSize') pageSize = 10,
-    @Query('q') q = ''
-  ) {
-    return await this.articleService.findArticleList(page, pageSize, q);
+  @Validate()
+  async findArticleList(@Query() query: CommonFindListDTO) {
+    return await this.articleService.findArticleList(query);
   }
 }

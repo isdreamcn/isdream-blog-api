@@ -3,8 +3,8 @@ import { InjectEntityModel } from '@midwayjs/typeorm';
 import { Repository } from 'typeorm';
 import { ArticleTag } from '../entity/articleTag';
 import { NotFountHttpError } from '../error/custom.error';
-
-export type IArticleTagData = Partial<ArticleTag>;
+import { ArticleTagDTO } from '../dto/articleTag';
+import { CommonFindListDTO } from '../dto/common';
 
 @Provide()
 export class ArticleTagService {
@@ -29,7 +29,7 @@ export class ArticleTagService {
     return await Promise.all(ids.map(id => this.findArticleTag(id)));
   }
 
-  async createArticleTag({ title, description, color }: IArticleTagData) {
+  async createArticleTag({ title, description, color }: ArticleTagDTO) {
     return await this.articleTagModel.save({
       title,
       description,
@@ -44,7 +44,7 @@ export class ArticleTagService {
 
   async updateArticleTag(
     id: number,
-    { title, description, color }: IArticleTagData
+    { title, description, color }: ArticleTagDTO
   ) {
     const articleTag = await this.findArticleTag(id);
     return await this.articleTagModel.save({
@@ -55,7 +55,7 @@ export class ArticleTagService {
     });
   }
 
-  async findArticleTagList(page: number, pageSize: number, q: string) {
+  async findArticleTagList({ page, pageSize, q }: CommonFindListDTO) {
     const queryBuilder = this.articleTagModel
       .createQueryBuilder('articleTag')
       .where(

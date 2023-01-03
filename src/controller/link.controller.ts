@@ -8,7 +8,9 @@ import {
   Put,
   Query,
 } from '@midwayjs/decorator';
-import { LinkService, ILinkData } from '../service/link.service';
+import { Validate } from '@midwayjs/validate';
+import { LinkDTO, LinkFindListDTO } from '../dto/link';
+import { LinkService } from '../service/link.service';
 
 @Controller('/link')
 export class LinkController {
@@ -16,12 +18,14 @@ export class LinkController {
   linkService: LinkService;
 
   @Post()
-  async createLink(@Body() link: ILinkData) {
+  @Validate()
+  async createLink(@Body() link: LinkDTO) {
     await this.linkService.createLink(link);
   }
 
   @Put('/:id')
-  async updateLink(@Param('id') id: number, @Body() link: ILinkData) {
+  @Validate()
+  async updateLink(@Param('id') id: number, @Body() link: LinkDTO) {
     await this.linkService.updateLink(id, link);
   }
 
@@ -34,12 +38,8 @@ export class LinkController {
   }
 
   @Get()
-  async findLinkList(
-    @Query('page') page = 1,
-    @Query('pageSize') pageSize = 10,
-    @Query('q') q = '',
-    @Query('dead') dead?: boolean
-  ) {
-    return await this.linkService.findLinkList(page, pageSize, q, dead);
+  @Validate()
+  async findLinkList(@Query() query: LinkFindListDTO) {
+    return await this.linkService.findLinkList(query);
   }
 }

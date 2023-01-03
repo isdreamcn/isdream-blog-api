@@ -4,8 +4,9 @@ import { Inject } from '@midwayjs/decorator';
 import { Repository } from 'typeorm';
 import { Link } from '../entity/link';
 import { LinkTypeService } from './linkType.service';
-import { FieldRequiredError, NotFountHttpError } from '../error/custom.error';
+import { NotFountHttpError } from '../error/custom.error';
 import { toBoolean } from '../utils';
+import { LinkDTO, LinkFindListDTO } from '../dto/link';
 
 export interface ILinkData extends Partial<Omit<Link, 'type'>> {
   type?: number;
@@ -34,10 +35,7 @@ export class LinkService {
     return link;
   }
 
-  async createLink({ title, description, link, icon, type }: ILinkData) {
-    if (!type) {
-      throw new FieldRequiredError('type');
-    }
+  async createLink({ title, description, link, icon, type }: LinkDTO) {
     const _type = await this.linkTypeService.findLinkType(type);
     return this.linkModel.save({
       title,
@@ -50,7 +48,7 @@ export class LinkService {
 
   async updateLink(
     id: number,
-    { title, description, link, icon, type, dead }: ILinkData
+    { title, description, link, icon, type, dead }: LinkDTO
   ) {
     const linkEntity = await this.findLink(id);
     const _type = type
@@ -68,12 +66,7 @@ export class LinkService {
     });
   }
 
-  async findLinkList(
-    page: number,
-    pageSize: number,
-    q: string,
-    dead?: boolean
-  ) {
+  async findLinkList({ page, pageSize, q, dead }: LinkFindListDTO) {
     let queryBuilder = this.linkModel
       .createQueryBuilder('link')
       .leftJoinAndSelect('link.type', 'type')
