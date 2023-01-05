@@ -5,6 +5,7 @@ import * as jwt from '@midwayjs/jwt';
 import * as dotenv from 'dotenv';
 import * as validate from '@midwayjs/validate';
 import * as info from '@midwayjs/info';
+import * as upload from '@midwayjs/upload';
 import { join } from 'path';
 import { readFileSync } from 'fs';
 import { DefaultErrorFilter } from './filter/default.filter';
@@ -13,6 +14,9 @@ import { ReportMiddleware } from './middleware/report.middleware';
 import { FormatMiddleware } from './middleware/format.middleware';
 import { JwtMiddleware } from './middleware/jwt.middleware';
 import { AuthGuard } from './guard/auth.guard';
+
+// 不限制监听数量
+require('events').EventEmitter.defaultMaxListeners = 0;
 
 // load .env file
 dotenv.config();
@@ -29,6 +33,7 @@ for (const k in config) {
     orm,
     jwt,
     validate,
+    upload,
     {
       component: info,
       enabledEnvironment: ['local'],

@@ -7,8 +7,10 @@ import {
   DeleteDateColumn,
   ManyToOne,
   JoinColumn,
+  OneToOne,
 } from 'typeorm';
 import { EmojiType } from './emojiType';
+import { File } from './file';
 
 @Entity()
 export class Emoji {
@@ -19,11 +21,6 @@ export class Emoji {
     nullable: true,
   })
   placeholder: string;
-
-  @Column({
-    nullable: true,
-  })
-  src: string;
 
   @Column()
   description: string;
@@ -43,6 +40,12 @@ export class Emoji {
     select: false,
   })
   deletedAt: Date;
+
+  @OneToOne(() => File, {
+    nullable: true,
+  })
+  @JoinColumn()
+  file: File;
 
   @ManyToOne(() => EmojiType, emojiType => emojiType.emojis, {
     nullable: false,

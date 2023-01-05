@@ -1,5 +1,6 @@
 logs/
-keys/*
+keys/
+upload-files/
 npm-debug.log
 yarn-error.log
 node_modules/

@@ -9,9 +9,12 @@ import {
   ManyToMany,
   JoinTable,
   Index,
+  OneToOne,
+  JoinColumn,
 } from 'typeorm';
 import { Comment } from './comment';
 import { ArticleTag } from './articleTag';
+import { File } from './file';
 
 @Entity()
 export class Article {
@@ -21,11 +24,6 @@ export class Article {
   @Index()
   @Column()
   title: string;
-
-  @Column({
-    nullable: true,
-  })
-  cover: string;
 
   @Index({ fulltext: true })
   @Column('text')
@@ -62,6 +60,12 @@ export class Article {
     select: false,
   })
   deletedAt: Date;
+
+  @OneToOne(() => File, {
+    nullable: true,
+  })
+  @JoinColumn()
+  cover: File;
 
   @OneToMany(() => Comment, comment => comment.article)
   comments: Comment[];

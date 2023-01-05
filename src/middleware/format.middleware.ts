@@ -19,7 +19,11 @@ export class FormatMiddleware implements IMiddleware<Context, NextFunction> {
     };
   }
 
-  match(ctx) {
+  match(ctx: Context) {
+    if (ctx.path.indexOf('/file/') !== -1 && ctx.method === 'GET') {
+      return false;
+    }
+
     return ctx.path.indexOf('/v1') !== -1;
   }
 }

@@ -4,8 +4,8 @@ export class ArticleDTO {
   @Rule(RuleType.string().required())
   title: string;
 
-  @Rule(RuleType.string())
-  cover?: string;
+  @Rule(RuleType.number())
+  cover?: number;
 
   @Rule(RuleType.string().required())
   content: string;

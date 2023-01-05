@@ -6,6 +6,7 @@ import { ArticleDTO } from '../dto/article';
 import { CommonFindListDTO } from '../dto/common';
 import { NotFountHttpError } from '../error/custom.error';
 import { ArticleTagService } from './articleTag.service';
+import { FileService } from './file.service';
 
 @Provide()
 export class ArticleService {
@@ -14,6 +15,9 @@ export class ArticleService {
 
   @Inject()
   articleTagService: ArticleTagService;
+
+  @Inject()
+  fileService: FileService;
 
   async addArticleViews(id: number) {
     const article = await this.findArticle(id);
@@ -26,7 +30,7 @@ export class ArticleService {
       where: {
         id,
       },
-      relations: ['tags'],
+      relations: ['tags', 'cover'],
     });
     if (!article) {
       throw new NotFountHttpError(`id为${id}的文章不存在`);
@@ -40,8 +44,10 @@ export class ArticleService {
     isCommented,
     isTop,
     tags,
+    cover,
   }: ArticleDTO) {
     const _tags = await this.articleTagService.findArticleTags(tags);
+    const _cover = cover ? await this.fileService.findFile(cover) : undefined;
 
     return await this.articleModel.save({
       title,
@@ -49,6 +55,7 @@ export class ArticleService {
       isCommented,
       isTop,
       tags: _tags,
+      cover: _cover,
     });
   }
 
@@ -59,10 +66,11 @@ export class ArticleService {
 
   async updateArticle(
     id: number,
-    { title, content, isCommented, isTop, tags }: ArticleDTO
+    { title, content, isCommented, isTop, tags, cover }: ArticleDTO
   ) {
     const article = await this.findArticle(id);
     const _tags = await this.articleTagService.findArticleTags(tags);
+    const _cover = cover ? await this.fileService.findFile(cover) : undefined;
 
     return await this.articleModel.save({
       ...article,
@@ -71,6 +79,7 @@ export class ArticleService {
       isCommented,
       isTop,
       tags: _tags,
+      cover: _cover,
     });
   }
 
@@ -78,6 +87,7 @@ export class ArticleService {
     const queryBuilder = this.articleModel
       .createQueryBuilder('article')
       .leftJoinAndSelect('article.tags', 'tag')
+      .leftJoinAndSelect('article.cover', 'cover')
       .where('article.title LIKE :title OR article.content LIKE :content')
       .setParameters({
         title: `%${q}%`,
