@@ -34,6 +34,10 @@ export class EmojiService {
     return emoji;
   }
 
+  async findEmojis(ids: number[]) {
+    return await Promise.all(ids.map(async id => await this.findEmoji(id)));
+  }
+
   async createEmoji({ placeholder, description, file, type }: EmojiDTO) {
     const _file = await this.fileService.findFile(file);
     const _type = await this.emojiTypeService.findEmojiType(type);

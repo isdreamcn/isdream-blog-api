@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Comment } from '../entity/comment';
 import { ArticleService } from './article.service';
 import { UserService } from './user.service';
+import { EmojiService } from './emoji.service';
 import { NotFountHttpError, ParameterError } from '../error/custom.error';
 import {
   CommentDTO,
@@ -23,6 +24,9 @@ export class CommentService {
   @Inject()
   userService: UserService;
 
+  @Inject()
+  emojiService: EmojiService;
+
   async findComment(id: number) {
     const comment = await this.commentModel.findOne({
       where: {
@@ -32,6 +36,7 @@ export class CommentService {
         'article',
         'user',
         'parentComment',
+        'emojis',
         'likedUsers',
         'dislikedUsers',
       ],
@@ -45,7 +50,7 @@ export class CommentService {
   }
 
   async createComment(
-    { content, article, parentComment }: CommentDTO,
+    { content, article, parentComment, emojis }: CommentDTO,
     user: number
   ) {
     const _article = await this.articleService.findArticle(article);
@@ -53,6 +58,7 @@ export class CommentService {
     const _parentComment = parentComment
       ? await this.findComment(parentComment)
       : undefined;
+    const _emojis = await this.emojiService.findEmojis(emojis);
 
     if (_parentComment && _parentComment.parentComment) {
       throw new ParameterError('只能回复一级评论');
@@ -63,6 +69,7 @@ export class CommentService {
       article: _article,
       user: _user,
       parentComment: _parentComment,
+      emojis: _emojis,
     });
   }
 
@@ -83,6 +90,8 @@ export class CommentService {
     }
 
     const data = await queryBuilder
+      .leftJoinAndSelect('comment.emojis', 'emojis')
+      .leftJoinAndSelect('emojis.file', 'emojis.file')
       .addOrderBy('comment.createdAt', 'DESC')
       .skip((page - 1) * pageSize)
       .take(pageSize)
@@ -157,6 +166,8 @@ export class CommentService {
     queryBuilder = queryBuilder
       .loadRelationCountAndMap('comment.likedCount', 'comment.likedUsers')
       .leftJoinAndSelect('comment.user', 'user')
+      .leftJoinAndSelect('comment.emojis', 'emojis')
+      .leftJoinAndSelect('emojis.file', 'emojis.file')
       .addSelect('COUNT(likedUser.id) as likedCount')
       .leftJoin('comment.likedUsers', 'likedUser')
       .groupBy('comment.id');

@@ -13,6 +13,7 @@ import {
 } from 'typeorm';
 import { User } from './user';
 import { Article } from './article';
+import { Emoji } from './emoji';
 
 @Entity()
 export class Comment {
@@ -58,6 +59,10 @@ export class Comment {
   @ManyToOne(() => Comment, comment => comment.replies)
   @JoinColumn()
   parentComment: Comment;
+
+  @ManyToMany(() => Emoji)
+  @JoinTable()
+  emojis: Emoji[];
 
   @OneToMany(() => Comment, comment => comment.parentComment)
   replies: Comment[];
