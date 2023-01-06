@@ -17,12 +17,12 @@ export class Emoji {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column()
+  placeholder: string;
+
   @Column({
     nullable: true,
   })
-  placeholder: string;
-
-  @Column()
   description: string;
 
   @CreateDateColumn({

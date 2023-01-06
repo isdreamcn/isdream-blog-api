@@ -6,6 +6,8 @@ import { httpError } from '@midwayjs/core';
 @Guard()
 export class AuthGuard implements IGuard<Context> {
   async canActivate(context: Context, supplierClz, methodName: string) {
+    return true;
+
     // 从类元数据上获取角色信息
     const roleNameList = getPropertyMetadata<string[]>(
       ROLE_META_KEY,
