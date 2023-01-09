@@ -9,8 +9,8 @@ import {
   ManyToMany,
   JoinTable,
   Index,
-  OneToOne,
   JoinColumn,
+  ManyToOne,
 } from 'typeorm';
 import { Comment } from './comment';
 import { ArticleTag } from './articleTag';
@@ -28,6 +28,12 @@ export class Article {
   @Index({ fulltext: true })
   @Column('text')
   content: string;
+
+  @Column({
+    default: 1,
+    comment: '1-markdown、2-富文本',
+  })
+  render: number;
 
   @Column({
     type: 'double',
@@ -61,7 +67,7 @@ export class Article {
   })
   deletedAt: Date;
 
-  @OneToOne(() => File, {
+  @ManyToOne(() => File, {
     nullable: true,
   })
   @JoinColumn()

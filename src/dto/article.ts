@@ -10,6 +10,9 @@ export class ArticleDTO {
   @Rule(RuleType.string().required())
   content: string;
 
+  @Rule(RuleType.number().valid(1, 2))
+  render?: number;
+
   @Rule(RuleType.boolean())
   isCommented?: boolean;
 

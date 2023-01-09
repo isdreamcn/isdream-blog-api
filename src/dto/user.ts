@@ -26,3 +26,10 @@ export class UserLoginDTO extends OmitDto(UserDTO, ['username']) {
   @Rule(RuleType.string())
   username?: string;
 }
+
+export class AdminUserLoginDTO {
+  @Rule(RuleType.string().required())
+  username: string;
+  @Rule(RuleType.string().required())
+  password: string;
+}

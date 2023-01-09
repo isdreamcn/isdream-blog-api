@@ -9,8 +9,9 @@ import {
   Get,
   Query,
 } from '@midwayjs/decorator';
+import { HttpStatus, MidwayHttpError } from '@midwayjs/core';
 import { Validate } from '@midwayjs/validate';
-import { UserDTO, UserLoginDTO } from '../dto/user';
+import { UserDTO, UserLoginDTO, AdminUserLoginDTO } from '../dto/user';
 import { CommonFindListDTO } from '../dto/common';
 import { UserService } from '../service/user.service';
 import { JwtService } from '@midwayjs/jwt';
@@ -58,7 +59,7 @@ export class UserController {
   @Role(['pc'])
   @Post('/login')
   @Validate()
-  async loginUser(@Body() user: UserLoginDTO) {
+  async userLogin(@Body() user: UserLoginDTO) {
     const data = await this.userService.loginUser(user);
 
     return {
@@ -67,5 +68,25 @@ export class UserController {
         ...data,
       }),
     };
+  }
+
+  @Role(['pc'])
+  @Post('/admin/login')
+  @Validate()
+  async adminUserLogin(@Body() { username, password }: AdminUserLoginDTO) {
+    if (
+      username === process.env.ADMIN &&
+      password === process.env.ADMIN_PASSWORD
+    ) {
+      return {
+        username,
+        token: this.jwtService.signSync({
+          username,
+          isAdmin: true,
+        }),
+      };
+    } else {
+      throw new MidwayHttpError('用户名或密码错误', HttpStatus.UNAUTHORIZED);
+    }
   }
 }

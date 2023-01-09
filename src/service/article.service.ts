@@ -41,6 +41,7 @@ export class ArticleService {
   async createArticle({
     title,
     content,
+    render,
     isCommented,
     isTop,
     tags,
@@ -52,6 +53,7 @@ export class ArticleService {
     return await this.articleModel.save({
       title,
       content,
+      render,
       isCommented,
       isTop,
       tags: _tags,
@@ -66,7 +68,7 @@ export class ArticleService {
 
   async updateArticle(
     id: number,
-    { title, content, isCommented, isTop, tags, cover }: ArticleDTO
+    { title, content, render, isCommented, isTop, tags, cover }: ArticleDTO
   ) {
     const article = await this.findArticle(id);
     const _tags = await this.articleTagService.findArticleTags(tags);
@@ -76,6 +78,7 @@ export class ArticleService {
       ...article,
       title,
       content,
+      render,
       isCommented,
       isTop,
       tags: _tags,

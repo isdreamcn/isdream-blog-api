@@ -34,7 +34,7 @@ export class FileController {
     const dateFolder = path.join(
       `${date.getFullYear()}`,
       `${date.getMonth() + 1}`,
-      `${date.getDay()}`
+      `${date.getDate()}`
     );
     const folder = path.join(uploadFileFolder, dateFolder);
 
