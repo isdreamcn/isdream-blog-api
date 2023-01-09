@@ -3,6 +3,7 @@ import { uploadWhiteList } from '@midwayjs/upload';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { readFileSync } from 'fs';
+import { toBoolean } from '../utils';
 
 export default {
   // use for cookie sign key, should change to your own and keep security
@@ -27,7 +28,7 @@ export default {
         username: process.env.MYSQL_USERNAME,
         password: process.env.MYSQL_PASSWORD,
         database: process.env.MYSQL_DATABASE,
-        synchronize: true, // 如果第一次使用，不存在表，有同步的需求可以写 true
+        synchronize: toBoolean(process.env.MYSQL_SYNC), // 如果第一次使用，不存在表，有同步的需求可以写 true
         logging: false,
 
         // 配置实体模型 或者 entities: '/entity',
