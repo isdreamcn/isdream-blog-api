@@ -8,8 +8,8 @@ export default {
   // use for cookie sign key, should change to your own and keep security
   keys: '1670827585510_1877',
   koa: {
-    port: 7001,
-    globalPrefix: '/v1',
+    port: Number(process.env.KOA_PORT),
+    globalPrefix: process.env.KOA_GLOBAL_PREFIX,
   },
   jwt: {
     secret: readFileSync(join(__dirname, '../../keys/private.key')).toString(),

@@ -7,7 +7,7 @@ import * as validate from '@midwayjs/validate';
 import * as info from '@midwayjs/info';
 import * as upload from '@midwayjs/upload';
 import { join } from 'path';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { DefaultErrorFilter } from './filter/default.filter';
 import { NotFoundFilter } from './filter/notfound.filter';
 import { ReportMiddleware } from './middleware/report.middleware';
@@ -20,11 +20,12 @@ require('events').EventEmitter.defaultMaxListeners = 0;
 
 // load .env file
 dotenv.config();
-const config = dotenv.parse(
-  readFileSync(join(__dirname, `../.env.${process.env.CURRENT_ENV}`))
-);
-for (const k in config) {
-  process.env[k] = config[k];
+const envPath = join(__dirname, `../.env.${process.env.CURRENT_ENV}`);
+if (existsSync(envPath)) {
+  const config = dotenv.parse(readFileSync(envPath));
+  for (const k in config) {
+    process.env[k] = config[k];
+  }
 }
 
 @Configuration({

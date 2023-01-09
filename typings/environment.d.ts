@@ -4,6 +4,8 @@ declare global {
   namespace NodeJS {
     interface ProcessEnv {
       NODE_ENV: 'development' | 'production'
+      KOA_PORT: string
+      KOA_GLOBAL_PREFIX: string
       MYSQL_HOST: string
       MYSQL_PORT: string
       MYSQL_USERNAME: string
