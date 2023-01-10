@@ -1,4 +1,5 @@
 import { Rule, RuleType } from '@midwayjs/validate';
+import { CommonFindListDTO } from './common';
 
 export class ArticleDTO {
   @Rule(RuleType.string().required())
@@ -21,4 +22,9 @@ export class ArticleDTO {
 
   @Rule(RuleType.array().items(RuleType.number()))
   tags?: number[];
+}
+
+export class ArticleFindMainDTO extends CommonFindListDTO {
+  @Rule(RuleType.number())
+  tag?: number;
 }

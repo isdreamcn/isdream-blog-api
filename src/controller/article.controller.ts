@@ -11,7 +11,7 @@ import {
 } from '@midwayjs/decorator';
 import { Validate } from '@midwayjs/validate';
 import { Role } from '../decorator/role.decorator';
-import { ArticleDTO } from '../dto/article';
+import { ArticleDTO, ArticleFindMainDTO } from '../dto/article';
 import { CommonFindListDTO } from '../dto/common';
 import { ArticleService } from '../service/article.service';
 
@@ -47,10 +47,16 @@ export class ArticleController {
     };
   }
 
-  @Role(['pc'])
   @Get()
   @Validate()
   async findArticleList(@Query() query: CommonFindListDTO) {
     return await this.articleService.findArticleList(query);
+  }
+
+  @Role(['pc'])
+  @Get('/main')
+  @Validate()
+  async findArticleMain(@Query() query: ArticleFindMainDTO) {
+    return await this.articleService.findArticleMain(query);
   }
 }

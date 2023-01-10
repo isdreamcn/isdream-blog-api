@@ -2,7 +2,7 @@ import { Inject, Provide } from '@midwayjs/decorator';
 import { InjectEntityModel } from '@midwayjs/typeorm';
 import { Repository } from 'typeorm';
 import { Article } from '../entity/article';
-import { ArticleDTO } from '../dto/article';
+import { ArticleDTO, ArticleFindMainDTO } from '../dto/article';
 import { CommonFindListDTO } from '../dto/common';
 import { NotFountHttpError } from '../error/custom.error';
 import { ArticleTagService } from './articleTag.service';
@@ -96,6 +96,39 @@ export class ArticleService {
         title: `%${q}%`,
         content: `%${q}%`,
       });
+
+    const data = await queryBuilder
+      .orderBy('article.isTop', 'DESC')
+      .addOrderBy('article.views', 'DESC')
+      .addOrderBy('article.createdAt', 'DESC')
+      .skip((page - 1) * pageSize)
+      .take(pageSize)
+      .getMany();
+    const count = await queryBuilder.getCount();
+
+    return {
+      data,
+      count,
+    };
+  }
+
+  async findArticleMain({ page, pageSize, q, tag }: ArticleFindMainDTO) {
+    let queryBuilder = this.articleModel
+      .createQueryBuilder('article')
+      .leftJoinAndSelect('article.tags', 'tag')
+      .leftJoinAndSelect('article.cover', 'cover')
+      .loadRelationCountAndMap('article.comments', 'article.comments')
+      .where('(article.title LIKE :title OR article.content LIKE :content)')
+      .setParameters({
+        title: `%${q}%`,
+        content: `%${q}%`,
+      });
+
+    if (tag) {
+      queryBuilder = queryBuilder.andWhere('tag.id = :tag', {
+        tag,
+      });
+    }
 
     const data = await queryBuilder
       .orderBy('article.isTop', 'DESC')
