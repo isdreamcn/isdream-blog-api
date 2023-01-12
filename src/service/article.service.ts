@@ -86,6 +86,14 @@ export class ArticleService {
     });
   }
 
+  async commendArticle(id: number) {
+    const article = await this.findArticle(id);
+    return await this.articleModel.save({
+      ...article,
+      commends: article.commends + 1,
+    });
+  }
+
   async findArticleList({ page, pageSize, q }: CommonFindListDTO) {
     const queryBuilder = this.articleModel
       .createQueryBuilder('article')

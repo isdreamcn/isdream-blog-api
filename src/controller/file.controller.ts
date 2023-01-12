@@ -86,7 +86,6 @@ export class FileController {
     };
   }
 
-  @Role(['pc'])
   @Post('/upload')
   async uploadFile(@File() file: UploadFileInfo<string>, @Fields() fields) {
     if (!file) {

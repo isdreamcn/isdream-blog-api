@@ -38,6 +38,12 @@ export class ArticleController {
   }
 
   @Role(['pc'])
+  @Post('/commend/:id')
+  async commendArticle(@Param('id') id: number) {
+    await this.articleService.commendArticle(id);
+  }
+
+  @Role(['pc'])
   @Get('/:id')
   async findArticle(@Param('id') id: number) {
     await this.articleService.addArticleViews(id);

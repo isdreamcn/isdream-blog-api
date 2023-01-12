@@ -42,6 +42,12 @@ export class Article {
   views: number;
 
   @Column({
+    type: 'double',
+    default: 0,
+  })
+  commends: number;
+
+  @Column({
     default: true,
   })
   isCommented: boolean;
