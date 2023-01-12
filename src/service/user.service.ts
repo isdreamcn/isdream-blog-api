@@ -88,6 +88,13 @@ export class UserService {
       }
     }
 
-    return await this.findUser(user.id);
+    if (!user) {
+      throw new NotFountHttpError('用户不存在');
+    }
+
+    return await this.userModel.findOne({
+      where: { id: user.id },
+      select: ['id', 'email', 'username', 'avatar', 'website'],
+    });
   }
 }

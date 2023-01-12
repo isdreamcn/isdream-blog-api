@@ -66,6 +66,7 @@ export class UserController {
       data,
       token: this.jwtService.signSync({
         ...data,
+        email: undefined,
       }),
     };
   }
