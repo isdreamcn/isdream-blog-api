@@ -64,6 +64,12 @@ export class Comment {
   @JoinTable()
   emojis: Emoji[];
 
+  @ManyToOne(() => User, {
+    nullable: true,
+  })
+  @JoinColumn()
+  replyUser: User;
+
   @OneToMany(() => Comment, comment => comment.parentComment)
   replies: Comment[];
 

@@ -11,6 +11,9 @@ export class CommentDTO {
   @Rule(RuleType.number())
   parentComment?: number;
 
+  @Rule(RuleType.number())
+  replyUser?: number;
+
   @Rule(RuleType.array().items(RuleType.number()).default([]))
   emojis?: number[];
 }

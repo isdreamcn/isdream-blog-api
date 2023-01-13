@@ -36,6 +36,7 @@ export class CommentService {
         'article',
         'user',
         'parentComment',
+        'replyUser',
         'emojis',
         'likedUsers',
         'dislikedUsers',
@@ -50,7 +51,7 @@ export class CommentService {
   }
 
   async createComment(
-    { content, article, parentComment, emojis }: CommentDTO,
+    { content, article, parentComment, replyUser, emojis }: CommentDTO,
     user: number
   ) {
     const _article = await this.articleService.findArticle(article);
@@ -58,6 +59,7 @@ export class CommentService {
     const _parentComment = parentComment
       ? await this.findComment(parentComment)
       : undefined;
+    const _replyUser = await this.userService.findUser(replyUser);
     const _emojis = await this.emojiService.findEmojis(emojis);
 
     if (_parentComment && _parentComment.parentComment) {
@@ -69,6 +71,7 @@ export class CommentService {
       article: _article,
       user: _user,
       parentComment: _parentComment,
+      replyUser: _replyUser,
       emojis: _emojis,
     });
   }
@@ -166,6 +169,7 @@ export class CommentService {
     queryBuilder = queryBuilder
       .loadRelationCountAndMap('comment.likedCount', 'comment.likedUsers')
       .leftJoinAndSelect('comment.user', 'user')
+      .leftJoinAndSelect('comment.replyUser', 'replyUser')
       .leftJoinAndSelect('comment.emojis', 'emojis')
       .leftJoinAndSelect('emojis.file', 'emojis.file')
       .addSelect('COUNT(likedUser.id) as likedCount')
@@ -205,7 +209,7 @@ export class CommentService {
     { page, pageSize, sort, article }: CommentFindMainDTO,
     user?: number
   ) {
-    const { data: _data, count } = await this.findCommentReply(
+    const { data: _data } = await this.findCommentReply(
       {
         page,
         pageSize,
@@ -215,6 +219,15 @@ export class CommentService {
       user,
       article
     );
+
+    const count = await this.commentModel
+      .createQueryBuilder('comment')
+      .where('comment.article = :article AND comment.approved = :approved')
+      .setParameters({
+        article,
+        approved: 1,
+      })
+      .getCount();
 
     const data = await Promise.all(
       _data.map(async item => {
