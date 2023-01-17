@@ -62,11 +62,19 @@ export class StatisticService {
     });
     const articleTags = await this.articleTagModel.count();
 
+    const [lastArticle] = await this.articleModel.find({
+      order: {
+        createdAt: 'DESC',
+      },
+      take: 1,
+    });
+
     return {
       views: Number(res.views),
       comments,
       articles,
       articleTags,
+      lastTime: lastArticle?.createdAt,
     };
   }
 
