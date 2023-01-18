@@ -6,6 +6,7 @@ import * as dotenv from 'dotenv';
 import * as validate from '@midwayjs/validate';
 import * as info from '@midwayjs/info';
 import * as upload from '@midwayjs/upload';
+import * as crossDomain from '@midwayjs/cross-domain';
 import { join } from 'path';
 import { readFileSync, existsSync } from 'fs';
 import { DefaultErrorFilter } from './filter/default.filter';
@@ -35,6 +36,7 @@ if (existsSync(envPath)) {
     jwt,
     validate,
     upload,
+    crossDomain,
     {
       component: info,
       enabledEnvironment: ['local'],

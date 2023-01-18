@@ -50,4 +50,7 @@ export default {
     // base64: boolean，设置原始body是否是base64格式，默认为false，一般用于腾讯云的兼容
     base64: false,
   },
+  cors: {
+    origin: '*',
+  },
 } as MidwayConfig;
