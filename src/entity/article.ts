@@ -25,9 +25,15 @@ export class Article {
   @Column()
   title: string;
 
+  @Column('text', {
+    select: false,
+    comment: '富文本',
+  })
+  content: string;
+
   @Index({ fulltext: true })
   @Column('text')
-  content: string;
+  text: string;
 
   @Column({
     default: 1,

@@ -7,3 +7,13 @@ export const toBoolean = (v: any) => {
 
   return undefined;
 };
+
+export const htmlToText = (str?: string) => {
+  return (
+    str &&
+    str
+      .replace(/<.*?>/g, '')
+      .replace(/&.*;/g, '')
+      .replace(/\s{2,}/g, ' ')
+  );
+};

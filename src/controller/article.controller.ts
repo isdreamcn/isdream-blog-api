@@ -46,8 +46,8 @@ export class ArticleController {
   @Role(['pc'])
   @Get('/:id')
   async findArticle(@Param('id') id: number) {
-    await this.articleService.addArticleViews(id);
     const data = await this.articleService.findArticle(id);
+    await this.articleService.addArticleViews(id);
     return {
       data,
     };

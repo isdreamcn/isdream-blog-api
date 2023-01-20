@@ -7,6 +7,7 @@ import { CommonFindListDTO } from '../dto/common';
 import { NotFountHttpError } from '../error/custom.error';
 import { ArticleTagService } from './articleTag.service';
 import { FileService } from './file.service';
+import { htmlToText } from '../utils/format';
 
 @Provide()
 export class ArticleService {
@@ -31,6 +32,17 @@ export class ArticleService {
         id,
       },
       relations: ['tags', 'cover'],
+      select: [
+        'id',
+        'title',
+        'content',
+        'render',
+        'views',
+        'commends',
+        'isCommented',
+        'createdAt',
+        'updatedAt',
+      ],
     });
     if (!article) {
       throw new NotFountHttpError(`id为${id}的文章不存在`);
@@ -53,6 +65,7 @@ export class ArticleService {
     return await this.articleModel.save({
       title,
       content,
+      text: htmlToText(content),
       render,
       isCommented,
       isTop,
@@ -78,6 +91,7 @@ export class ArticleService {
       ...article,
       title,
       content,
+      text: htmlToText(content),
       render,
       isCommented,
       isTop,
@@ -99,7 +113,7 @@ export class ArticleService {
       .createQueryBuilder('article')
       .leftJoinAndSelect('article.tags', 'tag')
       .leftJoinAndSelect('article.cover', 'cover')
-      .where('article.title LIKE :title OR article.content LIKE :content')
+      .where('article.title LIKE :title OR article.text LIKE :content')
       .setParameters({
         title: `%${q}%`,
         content: `%${q}%`,
@@ -126,7 +140,7 @@ export class ArticleService {
       .leftJoinAndSelect('article.tags', 'tag')
       .leftJoinAndSelect('article.cover', 'cover')
       .loadRelationCountAndMap('article.comments', 'article.comments')
-      .where('(article.title LIKE :title OR article.content LIKE :content)')
+      .where('(article.title LIKE :title OR article.text LIKE :content)')
       .setParameters({
         title: `%${q}%`,
         content: `%${q}%`,
