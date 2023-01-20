@@ -55,6 +55,11 @@ export class CommentService {
     user: number
   ) {
     const _article = await this.articleService.findArticle(article);
+
+    if (_article.isCommented === false) {
+      throw new ParameterError('该文章的评论功能已关闭');
+    }
+
     const _user = await this.userService.findUser(user);
     const _parentComment = parentComment
       ? await this.findComment(parentComment)
