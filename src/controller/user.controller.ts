@@ -60,14 +60,16 @@ export class UserController {
   @Post('/login')
   @Validate()
   async userLogin(@Body() user: UserLoginDTO) {
-    const data = await this.userService.loginUser(user);
+    const result = await this.userService.loginUser(user);
 
     return {
-      data,
-      token: this.jwtService.signSync({
-        ...data,
-        email: undefined,
-      }),
+      data: {
+        user: result,
+        token: this.jwtService.signSync({
+          ...result,
+          email: undefined,
+        }),
+      },
     };
   }
 
@@ -81,12 +83,14 @@ export class UserController {
     ) {
       return {
         data: {
-          username,
+          user: {
+            username,
+          },
+          token: this.jwtService.signSync({
+            username,
+            isAdmin: true,
+          }),
         },
-        token: this.jwtService.signSync({
-          username,
-          isAdmin: true,
-        }),
       };
     } else {
       throw new MidwayHttpError('用户名或密码错误', HttpStatus.UNAUTHORIZED);
