@@ -24,6 +24,6 @@ export class FormatMiddleware implements IMiddleware<Context, NextFunction> {
       return false;
     }
 
-    return ctx.path.indexOf('/v1') !== -1;
+    return ctx.path.indexOf(process.env.KOA_GLOBAL_PREFIX) !== -1;
   }
 }

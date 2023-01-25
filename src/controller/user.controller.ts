@@ -80,7 +80,9 @@ export class UserController {
       password === process.env.ADMIN_PASSWORD
     ) {
       return {
-        username,
+        data: {
+          username,
+        },
         token: this.jwtService.signSync({
           username,
           isAdmin: true,
