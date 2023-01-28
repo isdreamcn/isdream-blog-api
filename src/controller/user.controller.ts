@@ -44,7 +44,7 @@ export class UserController {
 
   @Get('/:id')
   async findUser(@Param('id') id: number) {
-    const data = await this.userService.findUser(id);
+    const data = await this.userService.findUserHasEmail(id);
     return {
       data,
     };

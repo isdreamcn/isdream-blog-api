@@ -2,7 +2,7 @@ import { Provide } from '@midwayjs/decorator';
 import { InjectEntityModel } from '@midwayjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../entity/user';
-import { NotFountHttpError } from '../error/custom.error';
+import { NotFountHttpError, ParameterError } from '../error/custom.error';
 import { UserDTO, UserLoginDTO } from '../dto/user';
 import { CommonFindListDTO } from '../dto/common';
 
@@ -10,6 +10,17 @@ import { CommonFindListDTO } from '../dto/common';
 export class UserService {
   @InjectEntityModel(User)
   userModel: Repository<User>;
+
+  async checkUsernameUnique(username: string, id?: number) {
+    const user = await this.userModel.findOne({
+      where: {
+        username,
+      },
+    });
+    if (user && user.id !== id) {
+      throw new ParameterError(`昵称 ${username} 不可用`);
+    }
+  }
 
   async findUser(id: number) {
     const user = await this.userModel.findOne({
@@ -25,7 +36,24 @@ export class UserService {
     return user;
   }
 
+  async findUserHasEmail(id: number) {
+    const user = await this.userModel.findOne({
+      where: {
+        id,
+      },
+      select: ['id', 'email', 'username', 'avatar', 'website'],
+    });
+
+    if (!user) {
+      throw new NotFountHttpError(`id为${id}的用户不存在`);
+    }
+
+    return user;
+  }
+
   async createUser({ email, username, avatar, website }: UserDTO) {
+    await this.checkUsernameUnique(username);
+
     return await this.userModel.save({
       email,
       username,
@@ -40,6 +68,8 @@ export class UserService {
   }
 
   async updateUser(id: number, { email, username, avatar, website }: UserDTO) {
+    await this.checkUsernameUnique(username, id);
+
     const user = await this.findUser(id);
     return await this.userModel.save({
       ...user,
@@ -53,6 +83,15 @@ export class UserService {
   async findUserList({ page, pageSize, q }: CommonFindListDTO) {
     const queryBuilder = this.userModel
       .createQueryBuilder('user')
+      .select([
+        'id',
+        'email',
+        'username',
+        'avatar',
+        'website',
+        'createdAt',
+        'updatedAt',
+      ])
       .where('user.email LIKE :email OR user.username LIKE :username')
       .setParameters({
         email: `%${q}%`,
@@ -63,7 +102,7 @@ export class UserService {
       .addOrderBy('user.createdAt', 'DESC')
       .skip((page - 1) * pageSize)
       .take(pageSize)
-      .getMany();
+      .getRawMany();
     const count = await queryBuilder.getCount();
 
     return {
