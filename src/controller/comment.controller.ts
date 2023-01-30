@@ -53,7 +53,7 @@ export class CommentController {
     return await this.commentService.findCommentList(query);
   }
 
-  // 显示评论
+  // 显示/隐藏评论
   @Post('/approve/:id')
   async approveComment(@Param('id') id: number) {
     await this.commentService.approveComment(id);

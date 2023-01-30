@@ -89,9 +89,9 @@ export class CommentService {
   async findCommentList({ page, pageSize, q, approved }: CommentFindListDTO) {
     let queryBuilder = this.commentModel
       .createQueryBuilder('comment')
-      .where('comment.comment LIKE :comment')
+      .where('comment.content LIKE :content')
       .setParameters({
-        comment: `%${q}%`,
+        content: `%${q}%`,
       });
     if (approved !== undefined) {
       queryBuilder = queryBuilder.andWhere(`comment.approved=${approved}`);
@@ -116,7 +116,7 @@ export class CommentService {
     const comment = await this.findComment(id);
     return await this.commentModel.save({
       ...comment,
-      approved: true,
+      approved: !comment.approved,
     });
   }
 
