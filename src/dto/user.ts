@@ -9,7 +9,8 @@ export class UserDTO {
 
   @Rule(
     RuleType.string()
-      .empty(null)
+      .empty([null, ''])
+      .default('')
       .pattern(new RegExp('^https?://'))
       .error(new Error('avatar必须已http或https开头'))
   )
@@ -17,7 +18,8 @@ export class UserDTO {
 
   @Rule(
     RuleType.string()
-      .empty(null)
+      .empty([null, ''])
+      .default('')
       .pattern(new RegExp('^https?://'))
       .error(new Error('website必须已http或https开头'))
   )
