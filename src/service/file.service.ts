@@ -65,6 +65,7 @@ export class FileService {
       });
 
     const data = await queryBuilder
+      .addOrderBy('createdAt', 'DESC')
       .skip((page - 1) * pageSize)
       .take(pageSize)
       .getMany();

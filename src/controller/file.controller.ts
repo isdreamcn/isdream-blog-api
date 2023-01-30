@@ -15,6 +15,7 @@ import {
 import { Validate } from '@midwayjs/validate';
 import { Context } from '@midwayjs/koa';
 import { UploadFileInfo } from '@midwayjs/upload';
+import { NotFountHttpError } from '../error/custom.error';
 import { Role } from '../decorator/role.decorator';
 import { uploadFileFolder } from '../config/config.custom';
 import { FileService } from '../service/file.service';
@@ -112,12 +113,27 @@ export class FileController {
     };
   }
 
+  // 删除文件
+  removeFile(url?: string) {
+    if (!path) {
+      return;
+    }
+    const filePath = path.join(uploadFileFolder, url);
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+  }
+
   @Del('/:id')
   async deleteFile(@Param('id') id: number) {
+    const file = await this.fileService.findFile(id);
+    if (file) {
+      this.removeFile(file.url);
+      this.removeFile(file.thumbUrl);
+    }
     await this.fileService.deleteFile(id);
   }
 
-  @Role(['pc'])
   @Get()
   @Validate()
   async findFileList(@Query() query: CommonFindListDTO) {
@@ -135,6 +151,10 @@ export class FileController {
 
     this.ctx.set('Content-Type', file.mimeType);
 
-    return fs.createReadStream(path.join(uploadFileFolder, url));
+    const filePath = path.join(uploadFileFolder, url);
+    if (fs.existsSync(filePath)) {
+      return fs.createReadStream(filePath);
+    }
+    throw new NotFountHttpError(`文件 ${url} 不存在`);
   }
 }
