@@ -40,6 +40,7 @@ export class ArticleService {
         'views',
         'commends',
         'isCommented',
+        'isTop',
         'createdAt',
         'updatedAt',
       ],
@@ -165,5 +166,21 @@ export class ArticleService {
       data,
       count,
     };
+  }
+
+  async articleTop(id: number) {
+    const article = await this.findArticle(id);
+    return await this.articleModel.save({
+      id,
+      isTop: !article.isTop,
+    });
+  }
+
+  async articleCommented(id: number) {
+    const article = await this.findArticle(id);
+    return await this.articleModel.save({
+      id,
+      isCommented: !article.isCommented,
+    });
   }
 }

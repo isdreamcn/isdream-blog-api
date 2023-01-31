@@ -43,6 +43,18 @@ export class ArticleController {
     await this.articleService.commendArticle(id);
   }
 
+  // 设置/取消置顶
+  @Post('/top/:id')
+  async articleTop(@Param('id') id: number) {
+    await this.articleService.articleTop(id);
+  }
+
+  // 允许/禁止评论
+  @Post('/commented/:id')
+  async articleCommented(@Param('id') id: number) {
+    await this.articleService.articleCommented(id);
+  }
+
   @Role(['pc'])
   @Get('/:id')
   async findArticle(@Param('id') id: number) {
