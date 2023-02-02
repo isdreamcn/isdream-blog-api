@@ -96,7 +96,7 @@ export class FileController {
     const { url, thumbUrl } = await this.saveFile(file, fields.thumb);
     const { filename, mimeType } = file;
 
-    await this.fileService.createFile({
+    const data = await this.fileService.createFile({
       filename,
       mimeType,
       url,
@@ -105,10 +105,7 @@ export class FileController {
 
     return {
       data: {
-        filename,
-        mimeType,
-        url,
-        thumbUrl,
+        ...data,
       },
     };
   }

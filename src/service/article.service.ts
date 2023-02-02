@@ -122,8 +122,8 @@ export class ArticleService {
 
     const data = await queryBuilder
       .orderBy('article.isTop', 'DESC')
-      .addOrderBy('article.views', 'DESC')
       .addOrderBy('article.createdAt', 'DESC')
+      .addOrderBy('article.views', 'DESC')
       .skip((page - 1) * pageSize)
       .take(pageSize)
       .getMany();
