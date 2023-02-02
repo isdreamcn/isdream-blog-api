@@ -7,6 +7,7 @@ import {
   Post,
   Put,
   Query,
+  Del,
 } from '@midwayjs/decorator';
 import { Validate } from '@midwayjs/validate';
 import { LinkDTO, LinkFindListDTO } from '../dto/link';
@@ -21,6 +22,12 @@ export class LinkController {
   @Validate()
   async createLink(@Body() link: LinkDTO) {
     await this.linkService.createLink(link);
+  }
+
+  @Del('/:id')
+  @Validate()
+  async deleteLink(@Param('id') id: number) {
+    await this.linkService.deleteLink(id);
   }
 
   @Put('/:id')

@@ -73,7 +73,7 @@ export class LinkTypeService {
   async findLinkTypeMain() {
     return await this.linkTypeModel
       .createQueryBuilder('linkType')
-      .leftJoinAndSelect('linkType.links', 'links', 'links.dead = 0')
+      .leftJoinAndSelect('linkType.links', 'links')
       .getMany();
   }
 

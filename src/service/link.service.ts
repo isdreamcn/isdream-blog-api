@@ -5,7 +5,6 @@ import { Repository } from 'typeorm';
 import { Link } from '../entity/link';
 import { LinkTypeService } from './linkType.service';
 import { NotFountHttpError } from '../error/custom.error';
-import { toBoolean } from '../utils';
 import { LinkDTO, LinkFindListDTO } from '../dto/link';
 
 export interface ILinkData extends Partial<Omit<Link, 'type'>> {
@@ -46,9 +45,14 @@ export class LinkService {
     });
   }
 
+  async deleteLink(id: number) {
+    const link = await this.findLink(id);
+    return await this.linkModel.softRemove(link);
+  }
+
   async updateLink(
     id: number,
-    { title, description, link, icon, type, dead }: LinkDTO
+    { title, description, link, icon, type }: LinkDTO
   ) {
     const linkEntity = await this.findLink(id);
     const _type = type
@@ -61,12 +65,11 @@ export class LinkService {
       description,
       link,
       icon,
-      dead: toBoolean(dead),
       type: _type,
     });
   }
 
-  async findLinkList({ page, pageSize, q, dead }: LinkFindListDTO) {
+  async findLinkList({ page, pageSize, q, type }: LinkFindListDTO) {
     let queryBuilder = this.linkModel
       .createQueryBuilder('link')
       .leftJoinAndSelect('link.type', 'type')
@@ -76,8 +79,8 @@ export class LinkService {
         description: `%${q}%`,
       });
 
-    if (dead !== undefined) {
-      queryBuilder = queryBuilder.andWhere('link.dead = :dead', { dead });
+    if (type !== undefined) {
+      queryBuilder = queryBuilder.andWhere('link.type = :type', { type });
     }
 
     const data = await queryBuilder

@@ -24,14 +24,11 @@ export class LinkDTO {
   )
   icon: string;
 
-  @Rule(RuleType.boolean())
-  dead?: boolean;
-
   @Rule(RuleType.number().required())
   type: number;
 }
 
 export class LinkFindListDTO extends CommonFindListDTO {
-  @Rule(RuleType.boolean())
-  dead?: boolean;
+  @Rule(RuleType.number())
+  type: number;
 }
