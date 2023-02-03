@@ -124,11 +124,9 @@ export class FileController {
   @Del('/:id')
   async deleteFile(@Param('id') id: number) {
     const file = await this.fileService.findFile(id);
-    if (file) {
-      this.removeFile(file.url);
-      this.removeFile(file.thumbUrl);
-    }
     await this.fileService.deleteFile(id);
+    this.removeFile(file.url);
+    this.removeFile(file.thumbUrl);
   }
 
   @Get()
