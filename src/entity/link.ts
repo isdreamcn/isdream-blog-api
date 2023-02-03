@@ -21,7 +21,9 @@ export class Link {
   @Column()
   description: string;
 
-  @Column()
+  @Column({
+    unique: true,
+  })
   link: string;
 
   @Column()

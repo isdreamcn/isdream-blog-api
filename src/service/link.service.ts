@@ -84,7 +84,7 @@ export class LinkService {
     }
 
     const data = await queryBuilder
-      .addOrderBy('link.createdAt', 'DESC')
+      .orderBy('link.createdAt', 'DESC')
       .skip((page - 1) * pageSize)
       .take(pageSize)
       .getMany();

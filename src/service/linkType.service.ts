@@ -58,7 +58,7 @@ export class LinkTypeService {
       });
 
     const data = await queryBuilder
-      .addOrderBy('linkType.createdAt', 'DESC')
+      .orderBy('linkType.createdAt', 'DESC')
       .skip((page - 1) * pageSize)
       .take(pageSize)
       .getMany();

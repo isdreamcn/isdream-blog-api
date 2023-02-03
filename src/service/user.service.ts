@@ -99,7 +99,7 @@ export class UserService {
       });
 
     const data = await queryBuilder
-      .addOrderBy('user.createdAt', 'DESC')
+      .orderBy('user.createdAt', 'DESC')
       .skip((page - 1) * pageSize)
       .take(pageSize)
       .getRawMany();

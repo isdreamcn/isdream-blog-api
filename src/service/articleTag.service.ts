@@ -67,7 +67,7 @@ export class ArticleTagService {
       });
 
     const data = await queryBuilder
-      .addOrderBy('articleTag.createdAt', 'DESC')
+      .orderBy('articleTag.createdAt', 'DESC')
       .skip((page - 1) * pageSize)
       .take(pageSize)
       .getMany();

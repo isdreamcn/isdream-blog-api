@@ -53,6 +53,7 @@ export class EmojiTypeService {
       });
 
     const data = await queryBuilder
+      .orderBy('emojiType.createdAt', 'DESC')
       .skip((page - 1) * pageSize)
       .take(pageSize)
       .getMany();

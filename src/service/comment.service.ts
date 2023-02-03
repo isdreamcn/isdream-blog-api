@@ -100,7 +100,7 @@ export class CommentService {
     const data = await queryBuilder
       .leftJoinAndSelect('comment.emojis', 'emojis')
       .leftJoinAndSelect('emojis.file', 'emojis.file')
-      .addOrderBy('comment.createdAt', 'DESC')
+      .orderBy('comment.createdAt', 'DESC')
       .skip((page - 1) * pageSize)
       .take(pageSize)
       .getMany();
