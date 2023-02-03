@@ -79,7 +79,7 @@ export class LinkService {
         description: `%${q}%`,
       });
 
-    if (type !== undefined) {
+    if (type) {
       queryBuilder = queryBuilder.andWhere('link.type = :type', { type });
     }
 

@@ -8,6 +8,7 @@ import {
   ManyToOne,
   JoinColumn,
   OneToOne,
+  Index,
 } from 'typeorm';
 import { EmojiType } from './emojiType';
 import { File } from './file';
@@ -17,7 +18,10 @@ export class Emoji {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Index()
+  @Column({
+    unique: true,
+  })
   placeholder: string;
 
   @Column({

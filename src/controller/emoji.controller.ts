@@ -11,8 +11,7 @@ import {
 } from '@midwayjs/decorator';
 import { Validate } from '@midwayjs/validate';
 import { EmojiService } from '../service/emoji.service';
-import { EmojiDTO } from '../dto/emoji';
-import { CommonFindListDTO } from '../dto/common';
+import { EmojiDTO, EmojiFindListDTO } from '../dto/emoji';
 
 @Controller('/emoji')
 export class EmojiController {
@@ -46,7 +45,7 @@ export class EmojiController {
 
   @Get()
   @Validate()
-  async findEmojiList(@Query() query: CommonFindListDTO) {
+  async findEmojiList(@Query() query: EmojiFindListDTO) {
     return await this.emojiService.findEmojiList(query);
   }
 }
