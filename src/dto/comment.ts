@@ -13,9 +13,6 @@ export class CommentDTO {
 
   @Rule(RuleType.number())
   replyUser?: number;
-
-  @Rule(RuleType.array().items(RuleType.number()).default([]))
-  emojis?: number[];
 }
 
 export class CommentFindListDTO extends CommonFindListDTO {

@@ -38,6 +38,7 @@ export class CommentService {
         'parentComment',
         'replyUser',
         'emojis',
+        'emojis.file',
         'likedUsers',
         'dislikedUsers',
       ],
@@ -51,7 +52,7 @@ export class CommentService {
   }
 
   async createComment(
-    { content, article, parentComment, replyUser, emojis }: CommentDTO,
+    { content, article, parentComment, replyUser }: CommentDTO,
     user: number
   ) {
     const _article = await this.articleService.findArticle(article);
@@ -60,16 +61,27 @@ export class CommentService {
       throw new ParameterError('该文章的评论功能已关闭');
     }
 
-    const _user = await this.userService.findUser(user);
     const _parentComment = parentComment
       ? await this.findComment(parentComment)
       : undefined;
     const _replyUser = await this.userService.findUser(replyUser);
-    const _emojis = await this.emojiService.findEmojis(emojis);
+    // const emojis = await this.emojiService.findEmojis(emojis);
 
     if (_parentComment && _parentComment.parentComment) {
       throw new ParameterError('只能回复一级评论');
     }
+
+    const _user = await this.userService.findUser(user);
+
+    const emojis = await Promise.all(
+      [
+        ...new Set(
+          content
+            // eslint-disable-next-line no-useless-escape
+            .match(/\[[^\[]+\]/g)
+        ),
+      ].map(key => this.emojiService.findEmojiByPlaceholder(key))
+    );
 
     return await this.commentModel.save({
       content,
@@ -77,7 +89,7 @@ export class CommentService {
       user: _user,
       parentComment: _parentComment,
       replyUser: _replyUser,
-      emojis: _emojis,
+      emojis: emojis.filter(item => item !== null),
     });
   }
 
@@ -179,7 +191,8 @@ export class CommentService {
       .leftJoinAndSelect('emojis.file', 'emojis.file')
       .addSelect('COUNT(likedUser.id) as likedCount')
       .leftJoin('comment.likedUsers', 'likedUser')
-      .groupBy('comment.id');
+      .groupBy('comment.id')
+      .addGroupBy('emojis.id');
 
     if (sort === 1) {
       queryBuilder = queryBuilder.orderBy('likedCount', 'DESC');
