@@ -18,10 +18,10 @@ export class Emoji {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Index()
-  @Column({
+  @Index({
     unique: true,
   })
+  @Column()
   placeholder: string;
 
   @Column({

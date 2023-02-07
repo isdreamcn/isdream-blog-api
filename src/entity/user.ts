@@ -16,15 +16,14 @@ export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Index()
+  @Index({ unique: true })
   @Column({
     select: false,
-    unique: true,
   })
   email: string;
 
-  @Index()
-  @Column({ unique: true })
+  @Index({ unique: true })
+  @Column()
   username: string;
 
   @Column({
