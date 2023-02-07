@@ -18,6 +18,12 @@ export class EmojiType {
   })
   title: string;
 
+  @Column()
+  width: string;
+
+  @Column()
+  height: string;
+
   @CreateDateColumn({
     type: 'timestamp',
   })

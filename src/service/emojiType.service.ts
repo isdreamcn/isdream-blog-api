@@ -25,9 +25,11 @@ export class EmojiTypeService {
     return emojiType;
   }
 
-  async createEmojiType({ title }: EmojiTypeDTO) {
+  async createEmojiType({ title, width, height }: EmojiTypeDTO) {
     return await this.emojiTypeModel.save({
       title,
+      width,
+      height,
     });
   }
 
@@ -36,11 +38,13 @@ export class EmojiTypeService {
     return await this.emojiTypeModel.remove(emojiType);
   }
 
-  async updateEmojiType(id: number, { title }: EmojiTypeDTO) {
+  async updateEmojiType(id: number, { title, width, height }: EmojiTypeDTO) {
     const emojiType = await this.findEmojiType(id);
     return await this.emojiTypeModel.save({
       ...emojiType,
       title,
+      width,
+      height,
     });
   }
 

@@ -111,7 +111,7 @@ export class CommentService {
 
     const data = await queryBuilder
       .leftJoinAndSelect('comment.emojis', 'emojis')
-      .leftJoinAndSelect('emojis.file', 'emojis.file')
+      .leftJoinAndSelect('emojis.file', 'emojisFile')
       .orderBy('comment.createdAt', 'DESC')
       .skip((page - 1) * pageSize)
       .take(pageSize)
@@ -188,7 +188,8 @@ export class CommentService {
       .leftJoinAndSelect('comment.user', 'user')
       .leftJoinAndSelect('comment.replyUser', 'replyUser')
       .leftJoinAndSelect('comment.emojis', 'emojis')
-      .leftJoinAndSelect('emojis.file', 'emojis.file')
+      .leftJoinAndSelect('emojis.file', 'emojisFile')
+      .leftJoinAndSelect('emojis.type', 'emojisType')
       .addSelect('COUNT(likedUser.id) as likedCount')
       .leftJoin('comment.likedUsers', 'likedUser')
       .groupBy('comment.id')
