@@ -55,11 +55,9 @@ export class ArticleController {
     await this.articleService.articleCommented(id);
   }
 
-  @Role(['pc'])
   @Get('/:id')
   async findArticle(@Param('id') id: number) {
     const data = await this.articleService.findArticle(id);
-    await this.articleService.addArticleViews(id);
     return {
       data,
     };
@@ -76,5 +74,21 @@ export class ArticleController {
   @Validate()
   async findArticleMain(@Query() query: ArticleFindMainDTO) {
     return await this.articleService.findArticleMain(query);
+  }
+
+  @Role(['pc'])
+  @Get('/main/:id')
+  async findArticleDetailsMain(@Param('id') id: number) {
+    await this.articleService.addArticleViews(id);
+    const data = await this.articleService.findArticle(id);
+    const prev = await this.articleService.findArticlePrev(id);
+    const next = await this.articleService.findArticleNext(id);
+    return {
+      data: {
+        data,
+        prev,
+        next,
+      },
+    };
   }
 }

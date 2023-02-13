@@ -1,6 +1,6 @@
 import { Inject, Provide } from '@midwayjs/decorator';
 import { InjectEntityModel } from '@midwayjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, LessThan, MoreThan } from 'typeorm';
 import { Article } from '../entity/article';
 import { ArticleDTO, ArticleFindMainDTO } from '../dto/article';
 import { CommonFindListDTO } from '../dto/common';
@@ -49,6 +49,29 @@ export class ArticleService {
       throw new NotFountHttpError(`id为${id}的文章不存在`);
     }
     return article;
+  }
+
+  async findArticlePrev(id: number) {
+    return await this.articleModel.findOne({
+      select: ['id', 'title', 'createdAt'],
+      relations: ['cover'],
+      where: {
+        id: LessThan(id),
+      },
+      order: {
+        createdAt: 'DESC',
+      },
+    });
+  }
+
+  async findArticleNext(id: number) {
+    return await this.articleModel.findOne({
+      select: ['id', 'title'],
+      relations: ['cover'],
+      where: {
+        id: MoreThan(id),
+      },
+    });
   }
 
   async createArticle({
