@@ -100,6 +100,8 @@ export class ArticleService {
 
   async deleteArticle(id: number) {
     const article = await this.findArticle(id);
+    // 移除tags关联
+    article.tags = [];
     return await this.articleModel.softRemove(article);
   }
 
