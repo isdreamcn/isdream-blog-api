@@ -16,3 +16,4 @@ run/
 .tsbuildinfo
 .tsbuildinfo.*
 .env.*
+sitemap.txt

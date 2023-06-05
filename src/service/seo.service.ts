@@ -1,6 +1,11 @@
 import { HttpService } from '@midwayjs/axios';
 import { Provide, Inject } from '@midwayjs/decorator';
 import { ILogger } from '@midwayjs/logger';
+import * as fs from 'fs';
+import { sitemapPath } from '../config/config.custom';
+
+// 避免同时写入sitemap.txt
+let promise = Promise.resolve();
 
 // 资源收录
 @Provide()
@@ -10,6 +15,22 @@ export class SEOService {
 
   @Inject()
   logger: ILogger;
+
+  setSitemap(urlList: string[] = []) {
+    if (!urlList.length) return;
+    promise = promise.then(() => {
+      return new Promise(resolve => {
+        fs.appendFile(sitemapPath, urlList.join('\n') + '\n', err => {
+          if (err) {
+            return this.logger.warn(
+              `SEO ${sitemapPath}: ${err.message || '写入失败'}`
+            );
+          }
+          resolve();
+        });
+      });
+    });
+  }
 
   async bing(urlList: string[] = []) {
     const { SEO_BING_HOST, SEO_BING_KEY, SEO_BING_KEY_LOCATION } = process.env;
@@ -23,6 +44,7 @@ export class SEOService {
     }
 
     urlList = urlList.map(url => SEO_BING_HOST + url);
+    this.setSitemap(urlList);
 
     this.httpService
       .request({
@@ -62,6 +84,7 @@ export class SEOService {
     }
 
     urlList = urlList.map(url => `https://${SEO_BAIDU_SITE}` + url);
+    this.setSitemap(urlList);
 
     this.httpService
       .request({
