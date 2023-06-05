@@ -4,6 +4,7 @@
   "description": "",
   "private": true,
   "dependencies": {
+    "@midwayjs/axios": "^3.11.10",
     "@midwayjs/bootstrap": "^3.0.0",
     "@midwayjs/core": "^3.0.0",
     "@midwayjs/cross-domain": "^3.9.9",

@@ -14,16 +14,23 @@ import { Role } from '../decorator/role.decorator';
 import { ArticleDTO, ArticleFindMainDTO } from '../dto/article';
 import { CommonFindListDTO } from '../dto/common';
 import { ArticleService } from '../service/article.service';
+import { SEOService } from '../service/seo.service';
 
 @Controller('/article')
 export class ArticleController {
   @Inject()
   articleService: ArticleService;
 
+  @Inject()
+  seoService: SEOService;
+
   @Post()
   @Validate()
   async createArticle(@Body() article: ArticleDTO) {
-    await this.articleService.createArticle(article);
+    const data = await this.articleService.createArticle(article);
+    const urlList = [`/article/${data.id}`];
+    this.seoService.bing(urlList);
+    this.seoService.baidu(urlList);
   }
 
   @Del('/:id')

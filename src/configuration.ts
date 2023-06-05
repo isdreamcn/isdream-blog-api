@@ -7,6 +7,7 @@ import * as validate from '@midwayjs/validate';
 import * as info from '@midwayjs/info';
 import * as upload from '@midwayjs/upload';
 import * as crossDomain from '@midwayjs/cross-domain';
+import * as axios from '@midwayjs/axios';
 import { join } from 'path';
 import { readFileSync, existsSync } from 'fs';
 import { DefaultErrorFilter } from './filter/default.filter';
@@ -37,6 +38,7 @@ if (existsSync(envPath)) {
     validate,
     upload,
     crossDomain,
+    axios,
     {
       component: info,
       enabledEnvironment: ['local'],

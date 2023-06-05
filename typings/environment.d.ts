@@ -14,6 +14,16 @@ declare global {
       MYSQL_SYNC: string
       ADMIN: string
       ADMIN_PASSWORD: string
+
+      // SEO 资源收录
+      // bing
+      SEO_BING_HOST?: string
+      SEO_BING_KEY?: string
+      SEO_BING_KEY_LOCATION?: string
+
+      // baidu
+      SEO_BAIDU_SITE?: string
+      SEO_BAIDU_TOKEN?: string
     }
   }
 }
