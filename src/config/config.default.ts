@@ -4,6 +4,7 @@ import { tmpdir } from 'os';
 import { join } from 'path';
 import { readFileSync } from 'fs';
 import { toBoolean } from '../utils';
+import { logsPath } from './config.custom';
 
 export default {
   // use for cookie sign key, should change to your own and keep security
@@ -15,6 +16,15 @@ export default {
   jwt: {
     secret: readFileSync(join(__dirname, '../../keys/private.key')).toString(),
     expiresIn: '30d', // https://github.com/vercel/ms
+  },
+  midwayLogger: {
+    default: {
+      dir: logsPath,
+      // 写入文本的日志等级
+      level: 'warn',
+      // 控制台输出的日志等级
+      consoleLevel: 'warn',
+    },
   },
   typeorm: {
     dataSource: {

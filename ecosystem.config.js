@@ -1,10 +1,10 @@
-const package = require('./package.json');
+const packageData = require('./package.json');
 
 module.exports = {
   apps: [
     {
       // 应用程序名称
-      name: package.name,
+      name: packageData.name,
       // 执行文件
       script: './bootstrap.js',
       // 是否启用监控模式，默认是false。如果设置成true，当应用程序变动时，pm2会自动重载。这里也可以设置你要监控的文件。
