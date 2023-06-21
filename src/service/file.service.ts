@@ -2,14 +2,17 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as sharp from 'sharp';
 import * as uuid from 'uuid';
-import { Provide } from '@midwayjs/decorator';
+import * as mime from 'mime';
+import { Provide, Inject } from '@midwayjs/decorator';
 import { UploadFileInfo } from '@midwayjs/upload';
 import { InjectEntityModel } from '@midwayjs/typeorm';
+import { HttpService } from '@midwayjs/axios';
+import { ILogger } from '@midwayjs/logger';
 import { Repository } from 'typeorm';
 import { File } from '../entity/file';
 import { NotFountHttpError, ParameterError } from '../error/custom.error';
 import { CommonFindListDTO } from '../dto/common';
-import { uploadFileFolder } from '../config/config.custom';
+import { uploadFileFolder, uploadTmpdir } from '../config/config.custom';
 import { toBoolean } from '../utils';
 
 interface FileData {
@@ -21,8 +24,69 @@ interface FileData {
 
 @Provide()
 export class FileService {
+  @Inject()
+  httpService: HttpService;
+
+  @Inject()
+  logger: ILogger;
+
   @InjectEntityModel(File)
   fileModel: Repository<File>;
+
+  // 转存附件
+  async transferFile(url: string) {
+    const response = await this.httpService.request({
+      url,
+      method: 'GET',
+      responseType: 'stream',
+    });
+
+    // 获取 MIME 类型
+    const contentType =
+      response.headers['content-type'] || 'application/octet-stream';
+
+    // 解析 Content-Disposition 响应头中的文件名
+    const contentDisposition = response.headers['content-disposition'];
+    let filename = '';
+    if (contentDisposition) {
+      const match = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/.exec(
+        contentDisposition
+      );
+      if (match && match[1]) {
+        filename = match[1].replace(/['"]/g, '');
+      }
+    }
+
+    // 如果无法从 Content-Disposition 中解析出文件名，则根据contentType生成filename
+    if (!filename) {
+      filename = `${uuid.v4()}.${mime.getExtension(contentType)}`;
+    }
+
+    const filePath = path.join(uploadTmpdir, filename);
+
+    return new Promise<FileData & File>((resolve, reject) => {
+      const writer = fs.createWriteStream(filePath);
+
+      writer.on('finish', () => {
+        resolve(
+          this.createFile({
+            filename,
+            data: filePath,
+            mimeType: contentType,
+            fieldName: 'file',
+          })
+        );
+      });
+
+      writer.on('error', err => {
+        this.logger.warn(`file.service 写入文件出错：${filePath}`);
+        this.logger.warn(`file.service 写入文件出错：${err.message}`);
+        reject(err);
+      });
+
+      response.data.pipe(writer);
+    });
+  }
 
   // 保存文件
   async saveFile(file: UploadFileInfo<string>, thumb = true) {
