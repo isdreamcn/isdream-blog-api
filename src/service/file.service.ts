@@ -1,9 +1,15 @@
+import * as path from 'path';
+import * as fs from 'fs';
+import * as sharp from 'sharp';
 import { Provide } from '@midwayjs/decorator';
+import { UploadFileInfo } from '@midwayjs/upload';
 import { InjectEntityModel } from '@midwayjs/typeorm';
 import { Repository } from 'typeorm';
 import { File } from '../entity/file';
-import { NotFountHttpError } from '../error/custom.error';
+import { NotFountHttpError, ParameterError } from '../error/custom.error';
 import { CommonFindListDTO } from '../dto/common';
+import { uploadFileFolder } from '../config/config.custom';
+import { toBoolean } from '../utils';
 
 interface FileData {
   url: string;
@@ -16,6 +22,75 @@ interface FileData {
 export class FileService {
   @InjectEntityModel(File)
   fileModel: Repository<File>;
+
+  // 保存文件
+  async saveFile(file: UploadFileInfo<string>, thumb = true) {
+    const date = new Date();
+    const dateFolder = path.join(
+      `${date.getFullYear()}`,
+      `${date.getMonth() + 1}`,
+      `${date.getDate()}`
+    );
+    const folder = path.join(uploadFileFolder, dateFolder);
+
+    // 生成文件夹
+    if (!fs.existsSync(folder)) {
+      fs.mkdirSync(folder, { recursive: true });
+    }
+
+    const { data, filename, mimeType } = file;
+    const ext = path.extname(filename);
+    const now = Date.now();
+
+    const _filename = `${now}${ext}`;
+
+    // 复制临时文件
+    await fs
+      .createReadStream(data)
+      .pipe(fs.createWriteStream(path.join(folder, _filename)));
+
+    // 生成缩略图
+    let _thumbFilename = undefined;
+    if (mimeType.indexOf('image') !== -1 && toBoolean(thumb) !== false) {
+      _thumbFilename = `${now}-100${ext}`;
+
+      let _sharp = sharp(data).resize({
+        width: 100,
+        height: 100,
+        fit: 'inside',
+      });
+
+      if (mimeType === 'image/png') {
+        _sharp = _sharp.png({
+          quality: 10,
+        });
+      } else if (mimeType === 'image/jpeg') {
+        _sharp = _sharp.jpeg({
+          quality: 10,
+        });
+      }
+
+      await _sharp.toFile(path.join(folder, _thumbFilename));
+    }
+
+    return {
+      url: path.join(dateFolder, _filename),
+      thumbUrl: _thumbFilename
+        ? path.join(dateFolder, _thumbFilename)
+        : undefined,
+    };
+  }
+
+  // 删除文件
+  removeFile(url?: string) {
+    if (!path) {
+      return;
+    }
+    const filePath = path.join(uploadFileFolder, url);
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+  }
 
   async findFile(id: number) {
     const file = await this.fileModel.findOne({
@@ -36,7 +111,8 @@ export class FileService {
       .createQueryBuilder('file')
       .where('file.url = :url OR file.thumbUrl = :url')
       .setParameters({
-        url,
+        // 设置目录分隔符
+        url: path.join(url),
       })
       .getOne();
 
@@ -47,12 +123,40 @@ export class FileService {
     return file;
   }
 
-  async createFile(file: FileData) {
-    return await this.fileModel.save(file);
+  // 获取文件流
+  async findFileStreamByUrl(url: string) {
+    const filePath = path.join(uploadFileFolder, url);
+    if (fs.existsSync(filePath)) {
+      return fs.createReadStream(filePath);
+    }
+    throw new NotFountHttpError(`文件 ${url} 不存在`);
+  }
+
+  async createFile(
+    file?: UploadFileInfo<string>,
+    fields?: Record<string, any>
+  ) {
+    if (!file) {
+      throw new ParameterError('请选择要上传的文件');
+    }
+
+    const { url, thumbUrl } = await this.saveFile(file, fields?.thumb);
+    const { filename, mimeType } = file;
+
+    const fileData: FileData = {
+      filename,
+      mimeType,
+      url,
+      thumbUrl,
+    };
+
+    return await this.fileModel.save(fileData);
   }
 
   async deleteFile(id: number) {
     const file = await this.findFile(id);
+    this.removeFile(file.url);
+    this.removeFile(file.thumbUrl);
     return await this.fileModel.remove(file);
   }
 
