@@ -34,7 +34,12 @@ export class FileService {
   fileModel: Repository<File>;
 
   // 转存附件
-  async transferFile(url: string) {
+  async transferFile(url?: string) {
+    if (!url || !/^https?:\/\//.test(url)) {
+      return Promise.resolve({
+        url,
+      });
+    }
     const response = await this.httpService.request({
       url,
       method: 'GET',
@@ -79,8 +84,8 @@ export class FileService {
       });
 
       writer.on('error', err => {
-        this.logger.warn(`file.service 写入文件出错：${filePath}`);
-        this.logger.warn(`file.service 写入文件出错：${err.message}`);
+        this.logger.warn(`transferFile 写入文件出错：${filePath}`);
+        this.logger.warn(`transferFile 写入文件出错：${err.message}`);
         reject(err);
       });
 
@@ -135,7 +140,14 @@ export class FileService {
         });
       }
 
-      await _sharp.toFile(path.join(folder, _thumbFilename));
+      try {
+        await _sharp.toFile(path.join(folder, _thumbFilename));
+      } catch (error) {
+        this.logger.warn(
+          `sharp生成缩略图失败：${path.join(folder, _filename)}`
+        );
+        this.logger.warn(`sharp生成缩略图失败：${error.message}`);
+      }
     }
 
     return {

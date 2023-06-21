@@ -4,6 +4,7 @@ import { Inject } from '@midwayjs/decorator';
 import { Repository } from 'typeorm';
 import { Link } from '../entity/link';
 import { LinkTypeService } from './linkType.service';
+import { FileService } from './file.service';
 import { NotFountHttpError } from '../error/custom.error';
 import { LinkDTO, LinkFindListDTO } from '../dto/link';
 
@@ -18,6 +19,9 @@ export class LinkService {
 
   @Inject()
   linkTypeService: LinkTypeService;
+
+  @Inject()
+  fileService: FileService;
 
   async findLink(id: number) {
     const link = await this.linkModel.findOne({
@@ -36,11 +40,12 @@ export class LinkService {
 
   async createLink({ title, description, link, icon, type }: LinkDTO) {
     const _type = await this.linkTypeService.findLinkType(type);
+    const { url } = await this.fileService.transferFile(icon);
     return this.linkModel.save({
       title,
       description,
       link,
-      icon,
+      icon: url,
       type: _type,
     });
   }
@@ -59,12 +64,13 @@ export class LinkService {
       ? await this.linkTypeService.findLinkType(type)
       : undefined;
 
+    const { url } = await this.fileService.transferFile(icon);
     return await this.linkModel.save({
       ...linkEntity,
       title,
       description,
       link,
-      icon,
+      icon: url,
       type: _type,
     });
   }

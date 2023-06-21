@@ -18,9 +18,9 @@ export class LinkDTO {
 
   @Rule(
     RuleType.string()
-      .pattern(new RegExp('^https?://'))
+      // .pattern(new RegExp('^https?://'))
       .required()
-      .error(new Error('icon必须已http或https开头'))
+    // .error(new Error('icon必须已http或https开头'))
   )
   icon: string;
 
