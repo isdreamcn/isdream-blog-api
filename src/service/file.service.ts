@@ -1,6 +1,7 @@
 import * as path from 'path';
 import * as fs from 'fs';
 import * as sharp from 'sharp';
+import * as uuid from 'uuid';
 import { Provide } from '@midwayjs/decorator';
 import { UploadFileInfo } from '@midwayjs/upload';
 import { InjectEntityModel } from '@midwayjs/typeorm';
@@ -40,9 +41,9 @@ export class FileService {
 
     const { data, filename, mimeType } = file;
     const ext = path.extname(filename);
-    const now = Date.now();
+    const _uuid = uuid.v4();
 
-    const _filename = `${now}${ext}`;
+    const _filename = `${_uuid}${ext}`;
 
     // 复制临时文件
     await fs
@@ -52,7 +53,7 @@ export class FileService {
     // 生成缩略图
     let _thumbFilename = undefined;
     if (mimeType.indexOf('image') !== -1 && toBoolean(thumb) !== false) {
-      _thumbFilename = `${now}-100${ext}`;
+      _thumbFilename = `${_uuid}_100${ext}`;
 
       let _sharp = sharp(data).resize({
         width: 100,

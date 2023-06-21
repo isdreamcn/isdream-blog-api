@@ -19,7 +19,8 @@
     "dotenv": "^16.0.3",
     "mysql2": "^2.3.3",
     "sharp": "^0.31.3",
-    "typeorm": "^0.3.11"
+    "typeorm": "^0.3.11",
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
     "@commitlint/cli": "^17.3.0",
