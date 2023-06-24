@@ -33,3 +33,8 @@ export class AdminUserLoginDTO {
   @Rule(RuleType.string().required())
   password: string;
 }
+
+export class AdminUserDTO extends UserDTO {
+  @Rule(RuleType.string())
+  avatar?: string;
+}

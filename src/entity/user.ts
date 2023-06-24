@@ -34,6 +34,11 @@ export class User {
   @Column({
     nullable: true,
   })
+  tempAvatar: string;
+
+  @Column({
+    nullable: true,
+  })
   website: string;
 
   @CreateDateColumn({

@@ -1,15 +1,21 @@
-import { Provide } from '@midwayjs/decorator';
+import { Provide, Inject } from '@midwayjs/decorator';
 import { InjectEntityModel } from '@midwayjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../entity/user';
 import { NotFountHttpError, ParameterError } from '../error/custom.error';
 import { UserDTO, UserLoginDTO } from '../dto/user';
 import { CommonFindListDTO } from '../dto/common';
+import { FileService } from './file.service';
+
+type EditUserData = Partial<UserDTO> & { tempAvatar?: string };
 
 @Provide()
 export class UserService {
   @InjectEntityModel(User)
   userModel: Repository<User>;
+
+  @Inject()
+  fileService: FileService;
 
   async checkUsernameUnique(username: string, id?: number) {
     const user = await this.userModel.findOne({
@@ -41,7 +47,7 @@ export class UserService {
       where: {
         id,
       },
-      select: ['id', 'email', 'username', 'avatar', 'website'],
+      select: ['id', 'email', 'username', 'avatar', 'tempAvatar', 'website'],
     });
 
     if (!user) {
@@ -51,13 +57,20 @@ export class UserService {
     return user;
   }
 
-  async createUser({ email, username, avatar, website }: UserDTO) {
+  async createUser({
+    email,
+    username,
+    avatar,
+    tempAvatar,
+    website,
+  }: EditUserData) {
     await this.checkUsernameUnique(username);
 
     return await this.userModel.save({
       email,
       username,
       avatar,
+      tempAvatar,
       website,
     });
   }
@@ -67,7 +80,10 @@ export class UserService {
     return await this.userModel.softRemove(user);
   }
 
-  async updateUser(id: number, { email, username, avatar, website }: UserDTO) {
+  async updateUser(
+    id: number,
+    { email, username, avatar, tempAvatar, website }: EditUserData
+  ) {
     await this.checkUsernameUnique(username, id);
 
     const user = await this.findUser(id);
@@ -76,6 +92,7 @@ export class UserService {
       email,
       username,
       avatar,
+      tempAvatar,
       website,
     });
   }
@@ -88,6 +105,7 @@ export class UserService {
         'email',
         'username',
         'avatar',
+        'tempAvatar',
         'website',
         'createdAt',
         'updatedAt',
@@ -100,6 +118,7 @@ export class UserService {
 
     const data = await queryBuilder
       .orderBy('user.createdAt', 'DESC')
+      .orderBy('user.tempAvatar', 'DESC')
       .skip((page - 1) * pageSize)
       .take(pageSize)
       .getRawMany();
@@ -120,10 +139,16 @@ export class UserService {
     });
 
     if (userData.username) {
+      const editUserData = {
+        ...userData,
+        tempAvatar: userData.avatar,
+        avatar: undefined,
+      };
+
       if (!user) {
-        user = await this.createUser(userData as UserDTO);
+        user = await this.createUser(editUserData);
       } else {
-        user = await this.updateUser(user.id, userData as UserDTO);
+        user = await this.updateUser(user.id, editUserData);
       }
     }
 
@@ -133,7 +158,22 @@ export class UserService {
 
     return await this.userModel.findOne({
       where: { id: user.id },
-      select: ['id', 'email', 'username', 'avatar', 'website'],
+      select: ['id', 'email', 'username', 'avatar', 'tempAvatar', 'website'],
+    });
+  }
+
+  // 设置用户头像
+  // avatar => tempAvatar(本地保存)
+  async setAvatar(id: number) {
+    const user = await this.findUser(id);
+    if (!user.tempAvatar) {
+      return;
+    }
+    const { url } = await this.fileService.transferFile(user.tempAvatar);
+    return await this.updateUser(id, {
+      ...user,
+      avatar: url,
+      tempAvatar: null,
     });
   }
 }

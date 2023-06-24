@@ -11,7 +11,7 @@ import {
 } from '@midwayjs/decorator';
 import { HttpStatus, MidwayHttpError } from '@midwayjs/core';
 import { Validate } from '@midwayjs/validate';
-import { UserDTO, UserLoginDTO, AdminUserLoginDTO } from '../dto/user';
+import { UserLoginDTO, AdminUserDTO, AdminUserLoginDTO } from '../dto/user';
 import { CommonFindListDTO } from '../dto/common';
 import { UserService } from '../service/user.service';
 import { JwtService } from '@midwayjs/jwt';
@@ -27,7 +27,7 @@ export class UserController {
 
   @Post()
   @Validate()
-  async createUser(@Body() user: UserDTO) {
+  async createUser(@Body() user: AdminUserDTO) {
     await this.userService.createUser(user);
   }
 
@@ -38,7 +38,7 @@ export class UserController {
 
   @Put('/:id')
   @Validate()
-  async updateUser(@Param('id') id: number, @Body() user: UserDTO) {
+  async updateUser(@Param('id') id: number, @Body() user: AdminUserDTO) {
     await this.userService.updateUser(id, user);
   }
 
@@ -54,6 +54,11 @@ export class UserController {
   @Validate()
   async findUserList(@Query() query: CommonFindListDTO) {
     return await this.userService.findUserList(query);
+  }
+
+  @Post('/setAvatar/:id')
+  async setUserAvatar(@Param('id') id: number) {
+    await this.userService.setAvatar(id);
   }
 
   @Role(['pc'])
