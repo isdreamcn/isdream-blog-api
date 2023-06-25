@@ -12,6 +12,7 @@ import {
   CommentFindMainDTO,
   CommentFindReplyDTO,
 } from '../dto/comment';
+import { xssFilter } from '../utils';
 
 @Provide()
 export class CommentService {
@@ -84,7 +85,7 @@ export class CommentService {
     );
 
     return await this.commentModel.save({
-      content,
+      content: xssFilter(content),
       article: _article,
       user: _user,
       parentComment: _parentComment,

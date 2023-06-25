@@ -1,3 +1,5 @@
+import * as xss from 'xss';
+
 export const toBoolean = (v: any) => {
   if ([true, 'true', 1, '1'].includes(v)) {
     return true;
@@ -16,4 +18,8 @@ export const htmlToText = (str?: string) => {
       .replace(/&.*;/g, '')
       .replace(/\s{2,}/g, ' ')
   );
+};
+
+export const xssFilter = (str: string) => {
+  return xss.filterXSS(str);
 };

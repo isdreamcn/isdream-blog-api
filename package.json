@@ -21,7 +21,8 @@
     "mysql2": "^2.3.3",
     "sharp": "^0.31.3",
     "typeorm": "^0.3.11",
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.0",
+    "xss": "^1.0.14"
   },
   "devDependencies": {
     "@commitlint/cli": "^17.3.0",
