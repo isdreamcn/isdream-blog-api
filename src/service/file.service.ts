@@ -122,26 +122,15 @@ export class FileService {
     // 生成缩略图
     let _thumbFilename = undefined;
     if (mimeType.indexOf('image') !== -1 && toBoolean(thumb) !== false) {
-      _thumbFilename = `${_uuid}_100${ext}`;
-
-      let _sharp = sharp(data).resize({
-        width: 100,
-        height: 100,
-        fit: 'inside',
-      });
-
-      if (mimeType === 'image/png') {
-        _sharp = _sharp.png({
-          quality: 10,
-        });
-      } else if (mimeType === 'image/jpeg') {
-        _sharp = _sharp.jpeg({
-          quality: 10,
-        });
-      }
+      _thumbFilename = `${_uuid}_w100.webp`;
 
       try {
-        await _sharp.toFile(path.join(folder, _thumbFilename));
+        await sharp(data)
+          .webp()
+          .resize({
+            width: 100,
+          })
+          .toFile(path.join(folder, _thumbFilename));
       } catch (error) {
         this.logger.warn(
           `sharp生成缩略图失败：${path.join(folder, _filename)}`
@@ -160,13 +149,20 @@ export class FileService {
 
   // 删除文件
   removeFile(url?: string) {
-    if (!path) {
-      return;
-    }
     const filePath = path.join(uploadFileFolder, url);
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-    }
+    fs.access(filePath, fs.constants.F_OK, err => {
+      // 文件不存在
+      if (err) {
+        return;
+      }
+
+      fs.unlink(filePath, err => {
+        if (err) {
+          this.logger.warn(`文件删除失败：${err.message}`);
+          this.logger.warn(`文件删除失败：${filePath}`);
+        }
+      });
+    });
   }
 
   async findFile(id: number) {
@@ -232,9 +228,12 @@ export class FileService {
 
   async deleteFile(id: number) {
     const file = await this.findFile(id);
+    const res = await this.fileModel.remove(file);
+
     this.removeFile(file.url);
     this.removeFile(file.thumbUrl);
-    return await this.fileModel.remove(file);
+
+    return res;
   }
 
   async findFileList({ page, pageSize, q }: CommonFindListDTO) {
