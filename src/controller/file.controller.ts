@@ -15,6 +15,7 @@ import { UploadFileInfo } from '@midwayjs/upload';
 import { Role } from '../decorator/role.decorator';
 import { FileService } from '../service/file.service';
 import { CommonFindListDTO } from '../dto/common';
+import { QueryFileDTO } from '../dto/file';
 
 @Controller('/file')
 export class FileController {
@@ -48,11 +49,17 @@ export class FileController {
 
   @Role(['pc'])
   @Get('/*')
-  async findFile() {
+  @Validate()
+  async findFile(@Query() query: QueryFileDTO) {
     const url = this.ctx.path.substring(this.ctx.path.indexOf('file/') + 5);
     const file = await this.fileService.findFileByUrl(url);
-    this.ctx.set('Content-Type', file.mimeType);
 
-    return await this.fileService.findFileStreamByUrl(url);
+    this.ctx.set('Content-Type', query.f ? `image/${query.f}` : file.mimeType);
+
+    return await this.fileService.findFileStreamByUrl(
+      url,
+      file.mimeType,
+      query
+    );
   }
 }

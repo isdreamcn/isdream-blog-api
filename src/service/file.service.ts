@@ -12,7 +12,12 @@ import { Repository } from 'typeorm';
 import { File } from '../entity/file';
 import { NotFountHttpError, ParameterError } from '../error/custom.error';
 import { CommonFindListDTO } from '../dto/common';
-import { uploadFileFolder, uploadTmpdir } from '../config/config.custom';
+import { QueryFileDTO } from '../dto/file';
+import {
+  uploadFileFolder,
+  uploadTmpdir,
+  uploadNeedSaveFileTags,
+} from '../config/config.custom';
 import { toBoolean } from '../utils';
 
 interface FileData {
@@ -197,12 +202,55 @@ export class FileService {
   }
 
   // 获取文件流
-  async findFileStreamByUrl(url: string) {
-    const filePath = path.join(uploadFileFolder, url);
+  async findFileStreamByUrl(
+    url: string,
+    mimeType: string,
+    { w, h, q, f }: QueryFileDTO
+  ) {
+    const originFilePath = path.join(uploadFileFolder, url);
+    if (!fs.existsSync(originFilePath)) {
+      throw new NotFountHttpError(`文件 ${originFilePath} 不存在`);
+    }
+
+    const parsePath = path.parse(url);
+    const fileTag =
+      (w ? `w${w}` : '') +
+      (h ? `h${h}` : '') +
+      (q ? `q${q}` : '') +
+      (f ? `.${f}` : parsePath.ext);
+
+    // 原文件不是图片，或无需处理
+    if (mimeType.indexOf('image') === -1 || fileTag === parsePath.ext) {
+      return fs.createReadStream(originFilePath);
+    }
+
+    const filePath = path.join(
+      uploadFileFolder,
+      parsePath.dir,
+      `${parsePath.name}_${fileTag}`
+    );
     if (fs.existsSync(filePath)) {
       return fs.createReadStream(filePath);
     }
-    throw new NotFountHttpError(`文件 ${url} 不存在`);
+
+    try {
+      const _sharp = sharp(originFilePath)
+        [f]({
+          quality: q,
+        })
+        .resize({
+          width: w,
+          height: h,
+        });
+      if (uploadNeedSaveFileTags.includes(fileTag)) {
+        _sharp.toFile(filePath);
+      }
+      return await _sharp.toBuffer();
+    } catch (err) {
+      this.logger.warn(`sharp处理文件失败：${filePath}`);
+      this.logger.warn(`sharp处理文件失败：${err.message}`);
+      throw err;
+    }
   }
 
   async createFile(
