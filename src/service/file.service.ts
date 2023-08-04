@@ -18,11 +18,9 @@ import {
   uploadTmpdir,
   uploadNeedSaveFileTags,
 } from '../config/config.custom';
-import { toBoolean } from '../utils';
 
 interface FileData {
   url: string;
-  thumbUrl?: string;
   filename: string;
   mimeType: string;
 }
@@ -99,7 +97,7 @@ export class FileService {
   }
 
   // 保存文件
-  async saveFile(file: UploadFileInfo<string>, thumb = true) {
+  async saveFile(file: UploadFileInfo<string>) {
     const date = new Date();
     const dateFolder = path.join(
       `${date.getFullYear()}`,
@@ -113,42 +111,18 @@ export class FileService {
       fs.mkdirSync(folder, { recursive: true });
     }
 
-    const { data, filename, mimeType } = file;
-    const ext = path.extname(filename);
-    const _uuid = uuid.v4();
+    const { data, filename } = file;
 
-    const _filename = `${_uuid}${ext}`;
+    const ext = path.extname(filename);
+    const _filename = `${uuid.v4()}${ext}`;
 
     // 复制临时文件
     await fs
       .createReadStream(data)
       .pipe(fs.createWriteStream(path.join(folder, _filename)));
 
-    // 生成缩略图
-    let _thumbFilename = undefined;
-    if (mimeType.indexOf('image') !== -1 && toBoolean(thumb) !== false) {
-      _thumbFilename = `${_uuid}_w100.webp`;
-
-      try {
-        await sharp(data)
-          .webp()
-          .resize({
-            width: 100,
-          })
-          .toFile(path.join(folder, _thumbFilename));
-      } catch (error) {
-        this.logger.warn(
-          `sharp生成缩略图失败：${path.join(folder, _filename)}`
-        );
-        this.logger.warn(`sharp生成缩略图失败：${error.message}`);
-      }
-    }
-
     return {
       url: path.join(dateFolder, _filename),
-      thumbUrl: _thumbFilename
-        ? path.join(dateFolder, _thumbFilename)
-        : undefined,
     };
   }
 
@@ -187,7 +161,7 @@ export class FileService {
   async findFileByUrl(url: string) {
     const file = await this.fileModel
       .createQueryBuilder('file')
-      .where('file.url = :url OR file.thumbUrl = :url')
+      .where('file.url = :url')
       .setParameters({
         // 设置目录分隔符
         url: path.join(url),
@@ -195,7 +169,7 @@ export class FileService {
       .getOne();
 
     if (!file) {
-      throw new NotFountHttpError(`url为${url}的文件不存在`);
+      throw new NotFountHttpError(`文件 ${url} 不存在`);
     }
 
     return file;
@@ -212,22 +186,22 @@ export class FileService {
       throw new NotFountHttpError(`文件 ${originFilePath} 不存在`);
     }
 
-    const parsePath = path.parse(url);
+    const pathInfo = path.parse(url);
     const fileTag =
       (w ? `w${w}` : '') +
       (h ? `h${h}` : '') +
       (q ? `q${q}` : '') +
-      (f ? `.${f}` : parsePath.ext);
+      (f ? `.${f}` : pathInfo.ext);
 
     // 原文件不是图片，或无需处理
-    if (mimeType.indexOf('image') === -1 || fileTag === parsePath.ext) {
+    if (mimeType.indexOf('image') === -1 || fileTag === pathInfo.ext) {
       return fs.createReadStream(originFilePath);
     }
 
     const filePath = path.join(
       uploadFileFolder,
-      parsePath.dir,
-      `${parsePath.name}_${fileTag}`
+      pathInfo.dir,
+      `${pathInfo.name}_${fileTag}`
     );
     if (fs.existsSync(filePath)) {
       return fs.createReadStream(filePath);
@@ -253,22 +227,18 @@ export class FileService {
     }
   }
 
-  async createFile(
-    file?: UploadFileInfo<string>,
-    fields?: Record<string, any>
-  ) {
+  async createFile(file?: UploadFileInfo<string>) {
     if (!file) {
       throw new ParameterError('请选择要上传的文件');
     }
 
-    const { url, thumbUrl } = await this.saveFile(file, fields?.thumb);
+    const { url } = await this.saveFile(file);
     const { filename, mimeType } = file;
 
     const fileData: FileData = {
       filename,
       mimeType,
       url,
-      thumbUrl,
     };
 
     return await this.fileModel.save(fileData);
@@ -278,8 +248,12 @@ export class FileService {
     const file = await this.findFile(id);
     const res = await this.fileModel.remove(file);
 
+    const pathInfo = path.parse(file.url);
+
     this.removeFile(file.url);
-    this.removeFile(file.thumbUrl);
+    uploadNeedSaveFileTags.forEach(fileTag =>
+      this.removeFile(path.join(pathInfo.dir, `${pathInfo.name}_${fileTag}`))
+    );
 
     return res;
   }
@@ -287,7 +261,7 @@ export class FileService {
   async findFileList({ page, pageSize, q }: CommonFindListDTO) {
     const queryBuilder = this.fileModel
       .createQueryBuilder('file')
-      .where('file.url LIKE :q OR file.thumbUrl LIKE :q OR file.url LIKE :q')
+      .where('file.url = :q')
       .setParameters({
         q: `%${q}%`,
       });

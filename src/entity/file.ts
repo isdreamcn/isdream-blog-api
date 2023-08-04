@@ -16,12 +16,6 @@ export class File {
   @Column()
   url: string;
 
-  @Index()
-  @Column({
-    nullable: true,
-  })
-  thumbUrl: string;
-
   @Column()
   filename: string;
 

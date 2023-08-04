@@ -2,7 +2,6 @@ import {
   Controller,
   Post,
   File,
-  Fields,
   Get,
   Inject,
   Param,
@@ -26,8 +25,8 @@ export class FileController {
   ctx: Context;
 
   @Post('/upload')
-  async uploadFile(@File() file: UploadFileInfo<string>, @Fields() fields) {
-    const data = await this.fileService.createFile(file, fields);
+  async uploadFile(@File() file: UploadFileInfo<string>) {
+    const data = await this.fileService.createFile(file);
 
     return {
       data: {
