@@ -261,7 +261,7 @@ export class FileService {
   async findFileList({ page, pageSize, q }: CommonFindListDTO) {
     const queryBuilder = this.fileModel
       .createQueryBuilder('file')
-      .where('file.url = :q')
+      .where('file.url LIKE :q OR file.filename LIKE :q')
       .setParameters({
         q: `%${q}%`,
       });
