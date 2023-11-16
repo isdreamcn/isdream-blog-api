@@ -51,7 +51,7 @@ export class StatisticService {
   async typeTotal() {
     const res: any = await this.articleModel
       .createQueryBuilder('article')
-      .select('COUNT(article.views)', 'views')
+      .select('SUM(article.views)', 'views')
       .getRawOne();
 
     const articles = await this.articleModel.count();
