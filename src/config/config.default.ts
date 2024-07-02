@@ -37,11 +37,14 @@ export default {
         username: process.env.MYSQL_USERNAME,
         password: process.env.MYSQL_PASSWORD,
         database: process.env.MYSQL_DATABASE,
-        synchronize: toBoolean(process.env.MYSQL_SYNC), // 如果第一次使用，不存在表，有同步的需求可以写 true
+        // 如果第一次使用，不存在表，有同步的需求可以写 true，注意会丢数据
+        synchronize: toBoolean(process.env.MYSQL_SYNC),
         logging: false,
 
-        // 配置实体模型 或者 entities: '/entity',
-        entities: '/entity',
+        // 配置实体模型
+        entities: [
+          'entity', // 特定目录
+        ],
       },
     },
   },
