@@ -2,8 +2,8 @@
 
 ## 1.生成私钥
 
-- 创建 ./keys
-- 进入 ./keys
+- 创建`keys`文件夹, 与`src`文件夹同级
+- 进入`keys`文件夹
 - 生成私钥
 
 ```bash
@@ -12,6 +12,8 @@ ssh-keygen -t rsa -b 2048 -f private.key
 
 ## 2.1 创建.env.dev（可选）
 
+- 与`.env`同级
+
 ```bash
 # .env.dev
 NODE_ENV=development
@@ -19,6 +21,8 @@ NODE_ENV=development
 ```
 
 ## 2.2 创建.env.prod（可选）
+
+- 与`.env`同级
 
 ```bash
 # .env.prod
@@ -31,6 +35,7 @@ NODE_ENV=production
 ```bash
 npm i
 npm run dev
+# .env KOA_PORT=7001
 open http://localhost:7001/
 ```
 
