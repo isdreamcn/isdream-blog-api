@@ -31,6 +31,7 @@ export class ArticleService {
       where: {
         id,
       },
+      withDeleted: true,
       relations: ['tags', 'cover'],
       select: [
         'id',

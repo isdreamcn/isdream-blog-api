@@ -82,7 +82,13 @@ export class StatisticService {
     return await this.articleModel
       .createQueryBuilder('article')
       .select('DATE_FORMAT(article.createdAt, "%Y-%c")', 'month')
-      .addSelect('SUM(article.views)', 'views')
+      .addSelect(qb => {
+        return qb
+          .select('SUM(article.views)', 'views')
+          .from(Article, 'article')
+          .where('DATE_FORMAT(article.createdAt, "%Y-%c") = month')
+          .limit(1);
+      }, 'views')
       .addSelect('COUNT(article.id)', 'articles')
       .addSelect('COUNT(comment.id)', 'comments')
       .leftJoin('article.comments', 'comment', 'comment.approved = 1')
