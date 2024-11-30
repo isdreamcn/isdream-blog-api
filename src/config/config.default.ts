@@ -5,6 +5,8 @@ import { readFileSync } from 'fs';
 import { toBoolean } from '../utils';
 import { logsPath, uploadTmpdir } from './config.custom';
 
+process.env.MIDWAY_LOGGER_WRITEABLE_DIR = logsPath;
+
 export default {
   // use for cookie sign key, should change to your own and keep security
   keys: '1670827585510_1877',
