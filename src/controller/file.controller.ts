@@ -53,6 +53,10 @@ export class FileController {
     const url = this.ctx.path.substring(this.ctx.path.indexOf('file/') + 5);
     const file = await this.fileService.findFileByUrl(url);
 
+    // 缓存30天
+    this.ctx.set('Cache-Control', 'public, max-age=2592000, immutable');
+    this.ctx.set('Expires', new Date(Date.now() + 2592000000).toUTCString());
+
     this.ctx.set('Content-Type', query.f ? `image/${query.f}` : file.mimeType);
 
     return await this.fileService.findFileStreamByUrl(
