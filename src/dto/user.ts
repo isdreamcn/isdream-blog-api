@@ -38,3 +38,10 @@ export class AdminUserDTO extends UserDTO {
   @Rule(RuleType.string())
   avatar?: string;
 }
+
+export class OAuthLoginDTO {
+  @Rule(RuleType.string().required())
+  code: string;
+  @Rule(RuleType.string().required())
+  code_verifier: string;
+}

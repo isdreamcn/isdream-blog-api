@@ -21,10 +21,7 @@ export class AuthGuard implements IGuard<Context> {
     }
 
     // 后台接口，如删除、编辑
-    if (
-      roleNameList.includes('admin') &&
-      !(user.isAdmin && user.username === process.env.ADMIN)
-    ) {
+    if (roleNameList.includes('admin') && !user.isAdmin) {
       throw new httpError.UnauthorizedError();
     }
 

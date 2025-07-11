@@ -10,8 +10,15 @@ import {
   Query,
 } from '@midwayjs/decorator';
 import { HttpStatus, MidwayHttpError } from '@midwayjs/core';
+import axios from 'axios';
 import { Validate } from '@midwayjs/validate';
-import { UserLoginDTO, AdminUserDTO, AdminUserLoginDTO } from '../dto/user';
+import { ILogger } from '@midwayjs/logger';
+import {
+  UserLoginDTO,
+  AdminUserDTO,
+  AdminUserLoginDTO,
+  OAuthLoginDTO,
+} from '../dto/user';
 import { CommonFindListDTO } from '../dto/common';
 import { UserService } from '../service/user.service';
 import { JwtService } from '@midwayjs/jwt';
@@ -24,6 +31,9 @@ export class UserController {
 
   @Inject()
   userService: UserService;
+
+  @Inject()
+  logger: ILogger;
 
   @Post()
   @Validate()
@@ -99,6 +109,60 @@ export class UserController {
       };
     } else {
       throw new MidwayHttpError('用户名或密码错误', HttpStatus.UNAUTHORIZED);
+    }
+  }
+
+  @Role(['pc'])
+  @Post('/admin/oauth_login')
+  @Validate()
+  async oauthLogin(@Body() { code, code_verifier }: OAuthLoginDTO) {
+    try {
+      const res = await axios.request({
+        url: 'https://api.account.isdream.cn/oidc/token',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        data: {
+          client_id: process.env.OAUTH_CLIENT_ID,
+          redirect_uri: process.env.OAUTH_REDIRECT_URL,
+          client_secret: process.env.OAUTH_CLIENT_SECRET,
+          grant_type: 'authorization_code',
+          code,
+          code_verifier,
+        },
+      });
+
+      const userRes = await await axios.request({
+        url: 'https://api.account.isdream.cn/oidc/me',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        data: {
+          access_token: res.data.access_token,
+        },
+      });
+
+      if (userRes.data.sub === process.env.OAUTH_ADMIN_SUB) {
+        return {
+          data: {
+            user: {
+              username: userRes.data.name,
+            },
+            token: this.jwtService.signSync({
+              username: userRes.data.name,
+              isAdmin: true,
+            }),
+          },
+        };
+      } else {
+        throw new MidwayHttpError('[oauth] 权限不足', HttpStatus.UNAUTHORIZED);
+      }
+    } catch (error) {
+      this.logger.error('[oauth] 登录失败');
+      this.logger.error(error);
+      throw new MidwayHttpError('登录失败', HttpStatus.UNAUTHORIZED);
     }
   }
 }
