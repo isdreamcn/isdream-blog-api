@@ -1,7 +1,5 @@
 import { MidwayConfig } from '@midwayjs/core';
 import { uploadWhiteList } from '@midwayjs/upload';
-import { join } from 'path';
-import { readFileSync } from 'fs';
 import { toBoolean } from '../utils';
 import { logsPath, uploadTmpdir } from './config.custom';
 
@@ -13,10 +11,15 @@ export default {
   koa: {
     port: Number(process.env.KOA_PORT),
     globalPrefix: process.env.KOA_GLOBAL_PREFIX,
+    proxy: true,
+  },
+  cors: {
+    origin: '*',
   },
   jwt: {
-    secret: readFileSync(join(__dirname, '../../keys/private.key')).toString(),
+    secret: process.env.HS256_SECRET,
     expiresIn: '30d', // https://github.com/vercel/ms
+    algorithm: 'HS256',
   },
   midwayLogger: {
     default: {
@@ -63,8 +66,5 @@ export default {
     cleanTimeout: 5 * 60 * 1000,
     // base64: boolean，设置原始body是否是base64格式，默认为false，一般用于腾讯云的兼容
     base64: false,
-  },
-  cors: {
-    origin: '*',
   },
 } as MidwayConfig;
