@@ -1,4 +1,4 @@
-import { HttpService } from '@midwayjs/axios';
+import axios from 'axios';
 import { Provide, Inject } from '@midwayjs/decorator';
 import { ILogger } from '@midwayjs/logger';
 import * as fs from 'fs';
@@ -10,9 +10,6 @@ let promise = Promise.resolve();
 // 资源收录
 @Provide()
 export class SEOService {
-  @Inject()
-  httpService: HttpService;
-
   @Inject()
   logger: ILogger;
 
@@ -46,7 +43,7 @@ export class SEOService {
     urlList = urlList.map(url => SEO_BING_HOST + url);
     this.setSitemap(urlList);
 
-    this.httpService
+    axios
       .request({
         url: 'https://www.bing.com/indexnow',
         method: 'POST',
@@ -86,7 +83,7 @@ export class SEOService {
     urlList = urlList.map(url => `https://${SEO_BAIDU_SITE}` + url);
     this.setSitemap(urlList);
 
-    this.httpService
+    axios
       .request({
         url: 'http://data.zz.baidu.com/urls',
         method: 'POST',

@@ -10,7 +10,7 @@ import {
   Query,
 } from '@midwayjs/decorator';
 import { HttpStatus, MidwayHttpError } from '@midwayjs/core';
-import axios from 'axios';
+import { oauthApiToken, oauthApiMe } from 'isdream-oauth';
 import { Validate } from '@midwayjs/validate';
 import { ILogger } from '@midwayjs/logger';
 import {
@@ -117,41 +117,26 @@ export class UserController {
   @Validate()
   async oauthLogin(@Body() { code, code_verifier }: OAuthLoginDTO) {
     try {
-      const res = await axios.request({
-        url: 'https://api.account.isdream.cn/oidc/token',
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        data: {
-          client_id: process.env.OAUTH_CLIENT_ID,
-          redirect_uri: process.env.OAUTH_REDIRECT_URL,
-          client_secret: process.env.OAUTH_CLIENT_SECRET,
-          grant_type: 'authorization_code',
-          code,
-          code_verifier,
-        },
+      const data = await oauthApiToken({
+        client_id: process.env.OAUTH_CLIENT_ID,
+        redirect_uri: process.env.OAUTH_REDIRECT_URL,
+        client_secret: process.env.OAUTH_CLIENT_SECRET,
+        code,
+        code_verifier,
       });
 
-      const userRes = await await axios.request({
-        url: 'https://api.account.isdream.cn/oidc/me',
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        data: {
-          access_token: res.data.access_token,
-        },
+      const userData = await oauthApiMe({
+        access_token: data.access_token,
       });
 
-      if (userRes.data.sub === process.env.OAUTH_ADMIN_SUB) {
+      if (userData.sub === process.env.OAUTH_ADMIN_SUB) {
         return {
           data: {
             user: {
-              username: userRes.data.name,
+              username: userData.name,
             },
             token: this.jwtService.signSync({
-              username: userRes.data.name,
+              username: userData.name,
               isAdmin: true,
             }),
           },

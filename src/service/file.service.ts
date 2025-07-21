@@ -3,10 +3,10 @@ import * as fs from 'fs';
 import * as sharp from 'sharp';
 import * as uuid from 'uuid';
 import * as mime from 'mime';
+import axios from 'axios';
 import { Provide, Inject } from '@midwayjs/decorator';
 import { UploadFileInfo } from '@midwayjs/upload';
 import { InjectEntityModel } from '@midwayjs/typeorm';
-import { HttpService } from '@midwayjs/axios';
 import { ILogger } from '@midwayjs/logger';
 import { Repository } from 'typeorm';
 import { File } from '../entity/file';
@@ -28,9 +28,6 @@ interface FileData {
 @Provide()
 export class FileService {
   @Inject()
-  httpService: HttpService;
-
-  @Inject()
   logger: ILogger;
 
   @InjectEntityModel(File)
@@ -43,7 +40,7 @@ export class FileService {
         url,
       });
     }
-    const response = await this.httpService.request({
+    const response = await axios.request({
       url,
       method: 'GET',
       responseType: 'stream',

@@ -25,5 +25,5 @@ export class QueryFileDTO {
 
   @Rule(RuleType.string().valid(...FileFormat))
   // 格式
-  f?: typeof FileFormat[number];
+  f?: (typeof FileFormat)[number];
 }
