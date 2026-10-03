@@ -3,8 +3,11 @@ import { ILogger } from '@midwayjs/logger';
 import { MidwayHttpError } from '@midwayjs/core';
 import { createTokenFetcher, TokenFetcher } from 'isdream-oauth/server';
 
-// @types/node@14 无 fetch/FormData/Blob 类型；Node 18+ 运行时原生可用
+// @types/node@14 无 fetch/FormData/Blob/AbortSignal.timeout 类型；Node 18+ 运行时原生可用
 const { FormData, Blob, fetch } = globalThis as any;
+const abortSignalTimeout: (ms: number) => AbortSignal = (
+  AbortSignal as any
+).timeout.bind(AbortSignal);
 
 /** media-api 上传响应（契约见 isdream-media-api PRD 十四） */
 export interface MediaUploadResult {
@@ -41,7 +44,8 @@ export class MediaService {
 
   /**
    * 转存文件到 media-api（POST /api/upload，serviceAuth 机器令牌）。
-   * ownerId 为 blog 本地用户标识，落 media 侧 owner = blog:{ownerId}。
+   * ownerId 为 blog 本地用户标识，X-Owner-Id 按 PRD 口径 = {client_id}:{本地用户id}，
+   * client_id 与领牌凭证同源（MEDIA_CLIENT_ID），media 侧按前缀区分消费方。
    */
   async upload(
     data: Buffer,
@@ -58,13 +62,15 @@ export class MediaService {
       Authorization: `Bearer ${token}`,
     };
     if (ownerId !== undefined && ownerId !== null) {
-      headers['X-Owner-Id'] = `blog:${ownerId}`;
+      headers['X-Owner-Id'] = `${process.env.MEDIA_CLIENT_ID}:${ownerId}`;
     }
 
     const response = await fetch(`${process.env.MEDIA_API_BASE}/api/upload`, {
       method: 'POST',
       headers,
       body: form,
+      // media-api 挂起不应拖住博客请求（≤25MB 上传 30s 足够）
+      signal: abortSignalTimeout(30_000),
     });
 
     if (!response.ok) {

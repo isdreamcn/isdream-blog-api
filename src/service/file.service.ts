@@ -5,6 +5,7 @@ import * as uuid from 'uuid';
 import * as mime from 'mime';
 import axios from 'axios';
 import { Provide, Inject } from '@midwayjs/decorator';
+import { MidwayHttpError } from '@midwayjs/core';
 import { UploadFileInfo } from '@midwayjs/upload';
 import { InjectEntityModel } from '@midwayjs/typeorm';
 import { ILogger } from '@midwayjs/logger';
@@ -43,10 +44,20 @@ export class FileService {
         url,
       });
     }
+    // media-api 自家的绝对 URL 内容哈希幂等，跳过转存少一次上传往返
+    const mediaBase = process.env.MEDIA_API_BASE;
+    if (mediaBase && url.startsWith(mediaBase.replace(/\/+$/, '') + '/')) {
+      return Promise.resolve({ url });
+    }
     const response = await axios.request({
       url,
       method: 'GET',
       responseType: 'arraybuffer',
+      // URL 来自管理端输入（友链 icon）与 OAuth 头像，按 media-api 图片 25MB
+      // 上限钳制下载体积并设超时，防止超大文件/挂起响应打爆内存或拖住请求
+      maxContentLength: 25 * 1024 * 1024,
+      maxBodyLength: 25 * 1024 * 1024,
+      timeout: 30_000,
     });
 
     // 获取 MIME 类型
@@ -70,12 +81,24 @@ export class FileService {
       filename = `${uuid.v4()}.${mime.getExtension(contentType)}`;
     }
 
-    const result = await this.mediaService.upload(
-      Buffer.from(response.data),
-      filename,
-      contentType,
-      ownerId
-    );
+    let result;
+    try {
+      result = await this.mediaService.upload(
+        Buffer.from(response.data),
+        filename,
+        contentType,
+        ownerId
+      );
+    } catch (err) {
+      // media 白名单外格式（415 BAD_MIME）：放弃转存，保留远程 URL 入库
+      if (err instanceof MidwayHttpError && err.status === 415) {
+        this.logger.warn(
+          `transferFile 转存降级（media 白名单外格式），保留远程 URL：${url}`
+        );
+        return { url };
+      }
+      throw err;
+    }
 
     return {
       url: result.url,

@@ -30,7 +30,10 @@ export class JwtMiddleware {
       if (/^Bearer$/i.test(scheme)) {
         try {
           // 验签失败/过期（错 secret、篡改 payload）不设 ctx.user，维持「无有效凭证即匿名」
-          ctx.user = this.jwtService.verifySync(token, {});
+          // algorithms 显式声明（RFC 8725 §3.1）：签发即 HS256，拒绝其他算法的令牌
+          ctx.user = this.jwtService.verifySync(token, {
+            algorithms: ['HS256'],
+          });
         } catch (error) {
           return await next();
         }

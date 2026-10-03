@@ -49,6 +49,23 @@ export class ContainerLifeCycle {
   app: koa.Application;
 
   async onReady() {
+    // media 转存链路（头像/友链图标/编辑器配图）的必备配置缺失时启动期失败，
+    // 不留「首个上传请求才报错」的隐雷；缺失键名一并列出便于排障
+    const mediaRequiredKeys = [
+      'MEDIA_TOKEN_URL',
+      'MEDIA_API_BASE',
+      'MEDIA_CLIENT_ID',
+      'MEDIA_CLIENT_SECRET',
+    ];
+    const missing = mediaRequiredKeys.filter(k => !process.env[k]);
+    if (missing.length > 0) {
+      throw new Error(
+        `media-api 转存配置缺失: ${missing.join(
+          ', '
+        )}，请参照 .env.example 补齐`
+      );
+    }
+
     // add middleware
     this.app.useMiddleware([ReportMiddleware, JwtMiddleware, FormatMiddleware]);
     // add filter

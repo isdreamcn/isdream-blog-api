@@ -15,5 +15,6 @@ run/
 *.un~
 .tsbuildinfo
 .tsbuildinfo.*
+.env
 .env.*
 sitemap.txt

@@ -123,10 +123,13 @@ export class UserController {
         client_secret: process.env.OAUTH_CLIENT_SECRET,
         code,
         code_verifier,
+        // 本地联调指向本地 oidc；不配走库内默认生产端点
+        apiBaseUrl: process.env.OAUTH_API_BASE,
       });
 
       const userData = await oauthApiMe({
         access_token: data.access_token,
+        apiBaseUrl: process.env.OAUTH_API_BASE,
       });
 
       if (userData.sub === process.env.OAUTH_ADMIN_SUB) {
