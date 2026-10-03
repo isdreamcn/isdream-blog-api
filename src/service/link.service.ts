@@ -1,6 +1,7 @@
 import { Provide } from '@midwayjs/core';
 import { InjectEntityModel } from '@midwayjs/typeorm';
 import { Inject } from '@midwayjs/decorator';
+import { Context } from '@midwayjs/koa';
 import { Repository } from 'typeorm';
 import { Link } from '../entity/link';
 import { LinkTypeService } from './linkType.service';
@@ -18,10 +19,18 @@ export class LinkService {
   linkModel: Repository<Link>;
 
   @Inject()
+  ctx: Context;
+
+  @Inject()
   linkTypeService: LinkTypeService;
 
   @Inject()
   fileService: FileService;
+
+  // 当前操作者标识，作为 media-api 转存的 owner（admin 令牌无 id，取 username）
+  private getOwnerId() {
+    return this.ctx.user?.id ?? this.ctx.user?.username;
+  }
 
   async findLink(id: number) {
     const link = await this.linkModel.findOne({
@@ -40,7 +49,10 @@ export class LinkService {
 
   async createLink({ title, description, link, icon, type }: LinkDTO) {
     const _type = await this.linkTypeService.findLinkType(type);
-    const { url } = await this.fileService.transferFile(icon);
+    const { url } = await this.fileService.transferFile(
+      icon,
+      this.getOwnerId()
+    );
     return this.linkModel.save({
       title,
       description,
@@ -64,7 +76,10 @@ export class LinkService {
       ? await this.linkTypeService.findLinkType(type)
       : undefined;
 
-    const { url } = await this.fileService.transferFile(icon);
+    const { url } = await this.fileService.transferFile(
+      icon,
+      this.getOwnerId()
+    );
     return await this.linkModel.save({
       ...linkEntity,
       title,

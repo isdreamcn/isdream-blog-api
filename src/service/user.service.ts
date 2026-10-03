@@ -169,7 +169,7 @@ export class UserService {
     if (!user.tempAvatar) {
       return;
     }
-    const { url } = await this.fileService.transferFile(user.tempAvatar);
+    const { url } = await this.fileService.transferFile(user.tempAvatar, id);
     return await this.updateUser(id, {
       ...user,
       avatar: url,

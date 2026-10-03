@@ -48,8 +48,8 @@ importers:
         specifier: ^16.0.3
         version: 16.6.1
       isdream-oauth:
-        specifier: ^0.1.2
-        version: 0.1.2
+        specifier: file:../npm-oauth/publish
+        version: file:../npm-oauth/publish
       mime:
         specifier: ^3.0.0
         version: 3.0.0
@@ -2388,8 +2388,9 @@ packages:
   isarray@2.0.5:
     resolution: {integrity: sha512-xHjhDr3cNBK0BzdUJSPXZntQUx/mwMS5Rw4A7lPJ90XGAO6ISP/ePDNuo0vhqOZU+UD5JoodwCAAoZQd3FeAKw==}
 
-  isdream-oauth@0.1.2:
-    resolution: {integrity: sha512-GxnUk7zNYLJNRACsej6jAoQrzbg4FPDp1qeqZZpmHWucJz487PV2iVK8l33YpglxE2x+m+W0TNE//hrHA50Fxg==}
+  isdream-oauth@file:../npm-oauth/publish:
+    resolution: {directory: ../npm-oauth/publish, type: directory}
+    engines: {node: '>=20'}
 
   isexe@2.0.0:
     resolution: {integrity: sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==}
@@ -4218,7 +4219,7 @@ snapshots:
       '@types/node': 20.5.1
       chalk: 4.1.2
       cosmiconfig: 8.3.6(typescript@4.8.4)
-      cosmiconfig-typescript-loader: 4.4.0(@types/node@20.5.1)(cosmiconfig@8.3.6(typescript@4.8.4))(ts-node@10.9.2(@types/node@20.5.1)(typescript@4.8.4))(typescript@4.8.4)
+      cosmiconfig-typescript-loader: 4.4.0(@types/node@20.5.1)(cosmiconfig@8.3.6(typescript@4.8.4))(ts-node@10.9.2(@types/node@14.18.63)(typescript@4.8.4))(typescript@4.8.4)
       lodash.isplainobject: 4.0.6
       lodash.merge: 4.6.2
       lodash.uniq: 4.5.0
@@ -5671,7 +5672,7 @@ snapshots:
 
   copy-to@2.0.1: {}
 
-  cosmiconfig-typescript-loader@4.4.0(@types/node@20.5.1)(cosmiconfig@8.3.6(typescript@4.8.4))(ts-node@10.9.2(@types/node@20.5.1)(typescript@4.8.4))(typescript@4.8.4):
+  cosmiconfig-typescript-loader@4.4.0(@types/node@20.5.1)(cosmiconfig@8.3.6(typescript@4.8.4))(ts-node@10.9.2(@types/node@14.18.63)(typescript@4.8.4))(typescript@4.8.4):
     dependencies:
       '@types/node': 20.5.1
       cosmiconfig: 8.3.6(typescript@4.8.4)
@@ -6578,7 +6579,7 @@ snapshots:
 
   isarray@2.0.5: {}
 
-  isdream-oauth@0.1.2: {}
+  isdream-oauth@file:../npm-oauth/publish: {}
 
   isexe@2.0.0: {}
 

@@ -24,6 +24,8 @@ export class FileController {
   @Inject()
   ctx: Context;
 
+  // 旧上传路径：封面/表情/文件管理页依赖响应 id 与 File 外键，仍写 File 表。
+  // 正文配图与远程转存已切 media-api（见 upload-media 与 transferFile），收口随阶段 2 统一处理。
   @Post('/upload')
   async uploadFile(@File() file: UploadFileInfo<string>) {
     const data = await this.fileService.createFile(file);
@@ -32,6 +34,17 @@ export class FileController {
       data: {
         ...data,
       },
+    };
+  }
+
+  // 编辑器配图上传：转存 media-api（绝对 URL 直插正文，不写 File 表）
+  @Post('/upload-media')
+  async uploadMediaFile(@File() file: UploadFileInfo<string>) {
+    const ownerId = this.ctx.user?.id ?? this.ctx.user?.username;
+    const data = await this.fileService.createMediaFile(file, ownerId);
+
+    return {
+      data,
     };
   }
 

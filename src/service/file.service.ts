@@ -15,9 +15,9 @@ import { CommonFindListDTO } from '../dto/common';
 import { QueryFileDTO } from '../dto/file';
 import {
   uploadFileFolder,
-  uploadTmpdir,
   uploadNeedSaveFileTags,
 } from '../config/config.custom';
+import { MediaService } from './media.service';
 
 interface FileData {
   url: string;
@@ -30,11 +30,14 @@ export class FileService {
   @Inject()
   logger: ILogger;
 
+  @Inject()
+  mediaService: MediaService;
+
   @InjectEntityModel(File)
   fileModel: Repository<File>;
 
-  // 转存附件
-  async transferFile(url?: string) {
+  // 转存远程文件到 media-api（友链图标、OAuth 头像；不再写 File 表）
+  async transferFile(url?: string, ownerId?: string | number) {
     if (!url || !/^https?:\/\//.test(url)) {
       return Promise.resolve({
         url,
@@ -43,7 +46,7 @@ export class FileService {
     const response = await axios.request({
       url,
       method: 'GET',
-      responseType: 'stream',
+      responseType: 'arraybuffer',
     });
 
     // 获取 MIME 类型
@@ -67,30 +70,42 @@ export class FileService {
       filename = `${uuid.v4()}.${mime.getExtension(contentType)}`;
     }
 
-    const filePath = path.join(uploadTmpdir, filename);
+    const result = await this.mediaService.upload(
+      Buffer.from(response.data),
+      filename,
+      contentType,
+      ownerId
+    );
 
-    return new Promise<FileData & File>((resolve, reject) => {
-      const writer = fs.createWriteStream(filePath);
+    return {
+      url: result.url,
+      filename,
+      mimeType: result.mime,
+    };
+  }
 
-      writer.on('finish', () => {
-        resolve(
-          this.createFile({
-            filename,
-            data: filePath,
-            mimeType: contentType,
-            fieldName: 'file',
-          })
-        );
-      });
+  // 编辑器配图直传 media-api（不写 File 表；封面/表情仍走 uploadFile 旧路径）
+  async createMediaFile(
+    file?: UploadFileInfo<string>,
+    ownerId?: string | number
+  ) {
+    if (!file) {
+      throw new ParameterError('请选择要上传的文件');
+    }
 
-      writer.on('error', err => {
-        this.logger.warn(`transferFile 写入文件出错：${filePath}`);
-        this.logger.warn(`transferFile 写入文件出错：${err.message}`);
-        reject(err);
-      });
+    const buffer = fs.readFileSync(file.data);
+    const result = await this.mediaService.upload(
+      buffer,
+      file.filename,
+      file.mimeType,
+      ownerId
+    );
 
-      response.data.pipe(writer);
-    });
+    return {
+      url: result.url,
+      filename: file.filename,
+      mimeType: result.mime,
+    };
   }
 
   // 保存文件
