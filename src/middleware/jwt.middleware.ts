@@ -29,7 +29,8 @@ export class JwtMiddleware {
 
       if (/^Bearer$/i.test(scheme)) {
         try {
-          ctx.user = this.jwtService.decodeSync(token);
+          // 验签失败/过期（错 secret、篡改 payload）不设 ctx.user，维持「无有效凭证即匿名」
+          ctx.user = this.jwtService.verifySync(token, {});
         } catch (error) {
           return await next();
         }
