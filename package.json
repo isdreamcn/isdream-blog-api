@@ -50,8 +50,8 @@
   "scripts": {
     "start": "npm run build & node bootstrap.js",
     "dev": "cross-env CURRENT_ENV=local MIDWAY_SERVER_ENV=local midway-bin dev --ts",
-    "test": "midway-bin test --ts",
-    "cov": "midway-bin cov --ts",
+    "test": "cross-env CURRENT_ENV=local midway-bin test --ts",
+    "cov": "cross-env CURRENT_ENV=local midway-bin cov --ts",
     "lint": "mwts check",
     "lint:fix": "mwts fix",
     "ci": "npm run cov",

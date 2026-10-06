@@ -1,21 +1,24 @@
 import { createApp, close, createHttpRequest } from '@midwayjs/mock';
 import { Framework } from '@midwayjs/koa';
 
-describe('test/controller/home.test.ts', () => {
+// 取自 .env.local 的 KOA_GLOBAL_PREFIX,凭证与端口也依赖 test 脚本注入的 CURRENT_ENV=local
+const prefix = '/v1';
 
-  it('should GET /', async () => {
-    // create app
+describe('应用冒烟测试', () => {
+  it('should GET /v1/statistic/total', async () => {
     const app = await createApp<Framework>();
 
-    // make request
-    const result = await createHttpRequest(app).get('/');
+    // 公开接口(@Role(['pc']))匿名可访问;带前缀路径由 FormatMiddleware 包裹
+    // {code, message, ...业务数据}
+    const result = await createHttpRequest(app).get(
+      `${prefix}/statistic/total`
+    );
 
-    // use expect by jest
     expect(result.status).toBe(200);
-    expect(result.text).toBe('Hello Midwayjs!');
+    expect(result.body.code).toBe(200);
+    expect(result.body.message).toBe('OK');
+    expect(result.body).toHaveProperty('data');
 
-    // close app
     await close(app);
   });
-
 });
