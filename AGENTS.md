@@ -40,6 +40,6 @@ commitlint + husky 强制 conventional commits,交互式提交用 `pnpm commit`(
 
 ## 变更敏感区前先读
 
-- 改部署/compose/Dockerfile:先读 `README.md` §3 与 `docker-deploy-test-report.md`
+- 改部署/compose/Dockerfile:先读 `README.md` §3
 - 改 OAuth/登录:先读 `.env.example` 中 OAUTH_* 注释与 `src/service/user.service.ts`
 - 改上传链路:先读 `src/service/file.service.ts` 与 `src/service/media.service.ts`
