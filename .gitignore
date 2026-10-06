@@ -17,4 +17,5 @@ run/
 .tsbuildinfo.*
 .env
 .env.*
+!.env.example
 sitemap.txt

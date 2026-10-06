@@ -57,8 +57,16 @@
     "ci": "npm run cov",
     "build": "cross-env CURRENT_ENV=prod MIDWAY_SERVER_ENV=prod midway-bin build -c",
     "prepare": "husky install",
-    "commit": "cz"
+    "commit": "cz",
+    "docker:build": "docker compose build",
+    "docker:up": "docker compose up -d",
+    "docker:up:bundled": "docker compose -f docker-compose.bundled.yml up -d",
+    "docker:down": "docker compose down --remove-orphans",
+    "docker:down:bundled": "docker compose -f docker-compose.bundled.yml down --remove-orphans",
+    "docker:clear": "docker compose down --remove-orphans && docker image rm isdream-blog-api:${npm_package_version:-latest}",
+    "docker:logs": "docker compose logs -f api"
   },
+  "packageManager": "pnpm@10.20.0",
   "midway-bin-clean": [
     ".vscode/.tsbuildinfo",
     "dist"

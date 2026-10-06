@@ -1,0 +1,49 @@
+# 默认模式（shared）：仅 api 容器，MySQL 复用宿主/外部实例，
+# uploads/logs 与宿主 bind mount 同盘互见；一键全套用 docker-compose.bundled.yml
+#
+# Linux 部署机前提：
+# - 宿主 MySQL 须监听容器可达地址（端口映射 0.0.0.0，原生仅绑 127.0.0.1 的不通）
+# - bind mount 目录属主须为容器运行用户：chown -R 1000:1000 logs upload-files
+services:
+  api:
+    # 镜像 tag 取 package.json 版本（pnpm run 自动注入 npm_package_version，
+    # 直接 docker compose 调用时回退 latest；忘 build 时 up 自动构建）
+    image: isdream-blog-api:${npm_package_version:-latest}
+    build: .
+    restart: unless-stopped
+    user: node
+    # .env（通用）→ .env.prod（部署层，required: false 不存在则跳过）
+    # 镜像内不带任何 .env* 文件，容器配置全部来自此注入链
+    env_file:
+      - path: .env
+      - path: .env.prod
+        required: false
+    environment:
+      NODE_ENV: production
+      # 端口双通道同步：compose 映射与容器内监听必须同源替换，
+      # 改端口只改 .env 的 KOA_PORT 一处
+      KOA_PORT: ${KOA_PORT:-7001}
+      # 容器内 localhost 指容器自身，宿主 MySQL 必须走 host.docker.internal。
+      # 本项目的 .env.prod 同时服务宿主 pm2 形态（MYSQL_HOST=127.0.0.1 不能改），
+      # 故容器视角地址由此处硬编码注入；连接远程实例时改这里（或删掉此键后
+      # 在 .env.prod 写远程地址走 env_file 覆盖链）
+      MYSQL_HOST: host.docker.internal
+    # host.docker.internal 在 Linux 无内置解析，host-gateway 映射宿主网关 IP
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    ports:
+      - '${KOA_PORT:-7001}:${KOA_PORT:-7001}'
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "require('http').get('http://127.0.0.1:'+(process.env.KOA_PORT||7001)+'/',r=>process.exit(r.statusCode<500?0:1)).on('error',()=>process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    volumes:
+      # bind mount 宿主目录：与 dev 同磁盘互见
+      - ./logs:/app/logs
+      - ./upload-files:/app/upload-files

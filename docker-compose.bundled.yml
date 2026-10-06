@@ -1,0 +1,72 @@
+# 自包含模式（bundled）：api + 专属 MySQL（named volume，不映射宿主端口），
+# 一键全套、销毁重建干净；默认模式（复用宿主 MySQL）用 docker-compose.yml。
+# 两文件服务集不同，跨模式切换前先 down（脚本已带 --remove-orphans）。
+services:
+  api:
+    image: isdream-blog-api:${npm_package_version:-latest}
+    build: .
+    restart: unless-stopped
+    user: node
+    # 仅凭证/业务键走 env_file 链；MySQL 拓扑键见 environment 硬编码
+    env_file:
+      - path: .env
+      - path: .env.prod
+        required: false
+    environment:
+      NODE_ENV: production
+      KOA_PORT: ${KOA_PORT:-7001}
+      # 拓扑键硬编码进文件，不读 .env——.env 的值是 dev 视角，会毒化容器；
+      # 密码/库名经替换可覆盖（变量替换读 shell env 与项目根 .env，不读 .env.prod）
+      MYSQL_HOST: mysql
+      MYSQL_PORT: '3306'
+      MYSQL_USERNAME: blog
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-blog@docker}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-blog}
+      # 全新专属库由 typeorm synchronize 自举建表（本项目无迁移脚本）
+      MYSQL_SYNC: 'true'
+    ports:
+      - '${KOA_PORT:-7001}:${KOA_PORT:-7001}'
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "require('http').get('http://127.0.0.1:'+(process.env.KOA_PORT||7001)+'/',r=>process.exit(r.statusCode<500?0:1)).on('error',()=>process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    depends_on:
+      mysql:
+        condition: service_healthy
+    volumes:
+      - uploads_data:/app/upload-files
+      - logs_data:/app/logs
+
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      TZ: UTC
+      # 密码仅对全新数据卷生效（首次初始化建账户用）；卷已存在时改了
+      # 不生效且密码不匹配，换密码需 down -v 清卷（数据丢）或进库 ALTER USER
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root@docker}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-blog}
+      # MYSQL_USER 不开放 env：.env 的 MYSQL_USERNAME 是 dev 视角值
+      # （本机常为 root，mysql 镜像禁止 MYSQL_USER=root，开放即初始化失败）
+      MYSQL_USER: blog
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-blog@docker}
+    # 无凭据 ping：密码不进 docker inspect 的进程参数
+    #（mysql:8.4 镜像无 healthcheck.sh，实测 not found 别用）
+    healthcheck:
+      test: ['CMD', 'mysqladmin', 'ping', '-h', '127.0.0.1']
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  mysql_data:
+  uploads_data:
+  logs_data:
