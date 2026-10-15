@@ -1,4 +1,4 @@
-import { Catch } from '@midwayjs/decorator';
+import { Catch } from '@midwayjs/core';
 import { httpError, MidwayHttpError } from '@midwayjs/core';
 import { Context } from '@midwayjs/koa';
 

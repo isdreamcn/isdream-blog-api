@@ -1,6 +1,6 @@
 import axios from 'axios';
-import { Provide, Inject } from '@midwayjs/decorator';
-import { ILogger } from '@midwayjs/logger';
+import { Provide, Inject } from '@midwayjs/core';
+import type { ILogger } from '@midwayjs/core';
 import * as fs from 'fs';
 import { sitemapPath } from '../config/config.custom';
 

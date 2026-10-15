@@ -1,5 +1,6 @@
 import { MidwayConfig } from '@midwayjs/core';
-import { uploadWhiteList } from '@midwayjs/upload';
+import { uploadWhiteList } from '@midwayjs/busboy';
+import joi from '@midwayjs/validation-joi';
 import { toBoolean } from '../utils';
 import { logsPath, uploadTmpdir } from './config.custom';
 
@@ -15,6 +16,13 @@ export default {
   },
   cors: {
     origin: '*',
+  },
+  // v4 校验组件为抽象层,须注册具体实现并设为默认
+  validation: {
+    validators: {
+      joi,
+    },
+    defaultValidator: 'joi',
   },
   jwt: {
     secret: process.env.HS256_SECRET,
@@ -53,11 +61,13 @@ export default {
       },
     },
   },
-  upload: {
+  busboy: {
     // mode: UploadMode, 默认为file，即上传到服务器临时目录，可以配置为 stream
     mode: 'file',
-    // fileSize: string, 最大上传文件大小，默认为 10mb
-    fileSize: '25mb',
+    limits: {
+      // fileSize: number, 最大上传文件大小（字节），25MB
+      fileSize: 25 * 1024 * 1024,
+    },
     // whitelist: string[]，文件扩展名白名单
     whitelist: uploadWhiteList,
     // tmpdir: string，上传的文件临时存储路径

@@ -8,11 +8,11 @@ import {
   Put,
   Get,
   Query,
-} from '@midwayjs/decorator';
+} from '@midwayjs/core';
 import { HttpStatus, MidwayHttpError } from '@midwayjs/core';
 import { oauthApiToken, oauthApiMe } from 'isdream-oauth';
-import { Validate } from '@midwayjs/validate';
-import { ILogger } from '@midwayjs/logger';
+import { Validate } from '@midwayjs/validation';
+import type { ILogger } from '@midwayjs/core';
 import {
   UserLoginDTO,
   AdminUserDTO,

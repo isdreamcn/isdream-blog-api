@@ -1,11 +1,11 @@
-import { Configuration, App } from '@midwayjs/decorator';
+import { Configuration, App, CommonJSFileDetector } from '@midwayjs/core';
 import * as koa from '@midwayjs/koa';
 import * as orm from '@midwayjs/typeorm';
 import * as jwt from '@midwayjs/jwt';
 import * as dotenv from 'dotenv';
-import * as validate from '@midwayjs/validate';
+import * as validation from '@midwayjs/validation';
 import * as info from '@midwayjs/info';
-import * as upload from '@midwayjs/upload';
+import * as busboy from '@midwayjs/busboy';
 import * as crossDomain from '@midwayjs/cross-domain';
 import { join } from 'path';
 import { readFileSync, existsSync } from 'fs';
@@ -30,12 +30,13 @@ if (existsSync(envPath)) {
 }
 
 @Configuration({
+  detector: new CommonJSFileDetector(),
   imports: [
     koa,
     orm,
     jwt,
-    validate,
-    upload,
+    validation,
+    busboy,
     crossDomain,
     {
       component: info,
@@ -45,7 +46,7 @@ if (existsSync(envPath)) {
   importConfigs: [join(__dirname, './config')],
 })
 export class ContainerLifeCycle {
-  @App()
+  @App('koa')
   app: koa.Application;
 
   async onReady() {

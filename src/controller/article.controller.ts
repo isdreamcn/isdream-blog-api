@@ -8,8 +8,8 @@ import {
   Post,
   Put,
   Query,
-} from '@midwayjs/decorator';
-import { Validate } from '@midwayjs/validate';
+} from '@midwayjs/core';
+import { Validate } from '@midwayjs/validation';
 import { Role } from '../decorator/role.decorator';
 import { ArticleDTO, ArticleFindMainDTO } from '../dto/article';
 import { CommonFindListDTO } from '../dto/common';

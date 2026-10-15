@@ -1,4 +1,4 @@
-import { Catch } from '@midwayjs/decorator';
+import { Catch } from '@midwayjs/core';
 import { Context } from '@midwayjs/koa';
 import { MidwayHttpError } from '@midwayjs/core';
 
@@ -6,7 +6,7 @@ import { MidwayHttpError } from '@midwayjs/core';
 export class DefaultErrorFilter {
   async catch(err: MidwayHttpError | Error, ctx: Context) {
     // 所有的未分类错误会到这里
-    const code = err instanceof MidwayHttpError ? err.status ?? 500 : 500;
+    const code = err instanceof MidwayHttpError ? (err.status ?? 500) : 500;
 
     try {
       ctx.status = code;

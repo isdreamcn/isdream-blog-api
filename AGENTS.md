@@ -1,14 +1,14 @@
 # isdream-blog-api
 
-isdream.cn 博客后端:Midway 3(Node ≥20,TS 4.8)+ Koa + TypeORM(MySQL)。含 OAuth 登录(isdream-oauth 对接 account-api)、文件上传转存 media-api(sharp 压缩为 w100/w750/w2560.webp 三档)、SEO 推送(bing/baidu)。包管理器 pnpm(10.x),勿用 npm/yarn。
+isdream.cn 博客后端:Midway 4(Node ≥20,TS 5)+ Koa + TypeORM(MySQL)。含 OAuth 登录(isdream-oauth 对接 account-api)、文件上传转存 media-api(sharp 压缩为 w100/w750/w2560.webp 三档)、SEO 推送(bing/baidu)。包管理器 pnpm(10.x),勿用 npm/yarn。
 
 ## 常用命令
 
 ```bash
 pnpm dev        # 本地开发,CURRENT_ENV=local,端口取 .env KOA_PORT(默认 7001)
-pnpm build      # 构建(CURRENT_ENV=prod),产物 dist/
+pnpm build      # mwtsc 构建,产物 dist/
 pnpm start      # build 后 node bootstrap.js 宿主进程启动
-pnpm test       # jest 单测(midway-bin test --ts)
+pnpm test       # jest 单测直跑(CURRENT_ENV=local)
 pnpm cov        # 覆盖率
 pnpm lint       # mwts 检查;lint:fix 自动修复
 ```
@@ -17,7 +17,7 @@ Docker 双模式部署详见 README.md §3,要点:统一走 `pnpm docker:*` 脚�
 
 ## 目录与分层
 
-- `src/controller` → `src/service` → `src/entity`(TypeORM);`src/dto` 为入参校验 DTO(@midwayjs/validate,路由上配 `@Validate()`)
+- `src/controller` → `src/service` → `src/entity`(TypeORM);`src/dto` 为入参校验 DTO(@midwayjs/validation,`RuleType` 取自 joi,路由上配 `@Validate()`)
 - `src/config` — Midway 配置;环境变量全部经 `src/configuration.ts` 顶部 dotenv 加载(`.env` 先载,`.env.{CURRENT_ENV}` 后载覆盖)
 - `src/guard/auth.guard.ts` + `src/decorator/role.decorator.ts` — 全局鉴权
 - `src/middleware` — report / jwt / format 三件套;`src/filter` — 全局错误过滤器
@@ -31,7 +31,8 @@ Docker 双模式部署详见 README.md §3,要点:统一走 `pnpm docker:*` 脚�
 - **环境变量**:模板见 `.env.example`,真实 `.env*` 不入库。`MEDIA_TOKEN_URL / MEDIA_API_BASE / MEDIA_CLIENT_ID / MEDIA_CLIENT_SECRET` 四键必填,缺失时 onReady 启动期直接抛错(故意设计,勿改为懒校验)。
 - **Docker env 合并**:compose 的 `env_file`(.env → .env.prod)同名键即使留空也会覆盖前层非空值,不打算覆盖的键须整行删除。
 - **双视角地址**:同机服务在容器内用 `host.docker.internal`,`.env` 写本地直觉形态(`localhost`),差异由 compose `environment` 或 `.env.prod` 覆盖;远程端点与 iss 校验类配置两视角同值,不参与覆盖。
-- 装饰器从 `@midwayjs/decorator` 导入(非 `@midwayjs/core`),沿用现有文件风格。
+- 装饰器与类型统一从 `@midwayjs/core` 导入(v4 已合并 `@midwayjs/decorator`);装饰签名引用的纯类型(Context/ILogger/UploadFileInfo 等)用 `import type`,isolatedModules 下混用会编译报错。
+- 上传组件为 `@midwayjs/busboy`(v4 起 upload 更名),配置键 `busboy`,`fileSize` 为 `limits.fileSize` 数字字节;**不再全局解析**,上传路由须显式挂 `UploadMiddleware`(见 file.controller)。
 - 注释与文档统一中文;lint 用 mwts(Google 风格),`endOfLine: auto`。
 
 ## 提交规范

@@ -7,9 +7,9 @@ import {
   Param,
   Post,
   Query,
-} from '@midwayjs/decorator';
-import { Context } from '@midwayjs/koa';
-import { Validate } from '@midwayjs/validate';
+} from '@midwayjs/core';
+import type { Context } from '@midwayjs/koa';
+import { Validate } from '@midwayjs/validation';
 import { Role } from '../decorator/role.decorator';
 import {
   CommentDTO,

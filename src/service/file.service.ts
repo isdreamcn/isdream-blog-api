@@ -1,14 +1,14 @@
 import * as path from 'path';
 import * as fs from 'fs';
-import * as sharp from 'sharp';
+import sharp from 'sharp';
 import * as uuid from 'uuid';
 import * as mime from 'mime';
 import axios from 'axios';
-import { Provide, Inject } from '@midwayjs/decorator';
+import { Provide, Inject } from '@midwayjs/core';
 import { MidwayHttpError } from '@midwayjs/core';
-import { UploadFileInfo } from '@midwayjs/upload';
+import type { UploadFileInfo } from '@midwayjs/busboy';
 import { InjectEntityModel } from '@midwayjs/typeorm';
-import { ILogger } from '@midwayjs/logger';
+import type { ILogger } from '@midwayjs/core';
 import { Repository } from 'typeorm';
 import { File } from '../entity/file';
 import { NotFountHttpError, ParameterError } from '../error/custom.error';
@@ -108,10 +108,7 @@ export class FileService {
   }
 
   // 编辑器配图直传 media-api（不写 File 表；封面/表情仍走 uploadFile 旧路径）
-  async createMediaFile(
-    file?: UploadFileInfo<string>,
-    ownerId?: string | number
-  ) {
+  async createMediaFile(file?: UploadFileInfo, ownerId?: string | number) {
     if (!file) {
       throw new ParameterError('请选择要上传的文件');
     }
@@ -132,7 +129,7 @@ export class FileService {
   }
 
   // 保存文件
-  async saveFile(file: UploadFileInfo<string>) {
+  async saveFile(file: UploadFileInfo) {
     const date = new Date();
     const dateFolder = path.join(
       `${date.getFullYear()}`,
@@ -244,7 +241,7 @@ export class FileService {
 
     try {
       const _sharp = sharp(originFilePath)
-        [f]({
+        .toFormat(f, {
           quality: q,
         })
         .resize({
@@ -262,7 +259,7 @@ export class FileService {
     }
   }
 
-  async createFile(file?: UploadFileInfo<string>) {
+  async createFile(file?: UploadFileInfo) {
     if (!file) {
       throw new ParameterError('请选择要上传的文件');
     }

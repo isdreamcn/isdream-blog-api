@@ -7,6 +7,11 @@ FROM node:22-alpine AS build
 
 WORKDIR /app
 
+# 构建期统一走 npmmirror：容器内直连 npmjs 不稳，corepack 拉取 pnpm 失败会
+# fallback 到镜像内置的新版 pnpm，与 lockfile 版本不兼容导致构建失败
+ENV COREPACK_NPM_REGISTRY=https://registry.npmmirror.com
+ENV npm_config_registry=https://registry.npmmirror.com
+
 # corepack 由 package.json 的 packageManager 字段决定 pnpm 版本
 RUN corepack enable
 

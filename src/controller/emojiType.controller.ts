@@ -8,8 +8,8 @@ import {
   Post,
   Put,
   Query,
-} from '@midwayjs/decorator';
-import { Validate } from '@midwayjs/validate';
+} from '@midwayjs/core';
+import { Validate } from '@midwayjs/validation';
 import { EmojiTypeService } from '../service/emojiType.service';
 import { EmojiTypeDTO } from '../dto/emojiType';
 import { CommonFindListDTO } from '../dto/common';

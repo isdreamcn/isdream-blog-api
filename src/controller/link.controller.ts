@@ -8,8 +8,8 @@ import {
   Put,
   Query,
   Del,
-} from '@midwayjs/decorator';
-import { Validate } from '@midwayjs/validate';
+} from '@midwayjs/core';
+import { Validate } from '@midwayjs/validation';
 import { LinkDTO, LinkFindListDTO } from '../dto/link';
 import { LinkService } from '../service/link.service';
 

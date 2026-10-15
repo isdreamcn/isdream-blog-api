@@ -7,10 +7,11 @@ import {
   Param,
   Del,
   Query,
-} from '@midwayjs/decorator';
-import { Validate } from '@midwayjs/validate';
-import { Context } from '@midwayjs/koa';
-import { UploadFileInfo } from '@midwayjs/upload';
+} from '@midwayjs/core';
+import { Validate } from '@midwayjs/validation';
+import type { Context } from '@midwayjs/koa';
+import { UploadMiddleware } from '@midwayjs/busboy';
+import type { UploadFileInfo } from '@midwayjs/busboy';
 import { Role } from '../decorator/role.decorator';
 import { FileService } from '../service/file.service';
 import { CommonFindListDTO } from '../dto/common';
@@ -26,8 +27,9 @@ export class FileController {
 
   // 旧上传路径：封面/表情/文件管理页依赖响应 id 与 File 外键，仍写 File 表。
   // 正文配图与远程转存已切 media-api（见 upload-media 与 transferFile），收口随阶段 2 统一处理。
-  @Post('/upload')
-  async uploadFile(@File() file: UploadFileInfo<string>) {
+  // v4 busboy 不再全局解析,上传路由须显式挂 UploadMiddleware
+  @Post('/upload', { middleware: [UploadMiddleware] })
+  async uploadFile(@File() file: UploadFileInfo) {
     const data = await this.fileService.createFile(file);
 
     return {
@@ -38,8 +40,8 @@ export class FileController {
   }
 
   // 编辑器配图上传：转存 media-api（绝对 URL 直插正文，不写 File 表）
-  @Post('/upload-media')
-  async uploadMediaFile(@File() file: UploadFileInfo<string>) {
+  @Post('/upload-media', { middleware: [UploadMiddleware] })
+  async uploadMediaFile(@File() file: UploadFileInfo) {
     const ownerId = this.ctx.user?.id ?? this.ctx.user?.username;
     const data = await this.fileService.createMediaFile(file, ownerId);
 

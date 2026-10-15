@@ -1,4 +1,4 @@
-import { Controller, Get, Inject } from '@midwayjs/decorator';
+import { Controller, Get, Inject } from '@midwayjs/core';
 import { StatisticService } from '../service/statistic.service';
 import { Role } from '../decorator/role.decorator';
 

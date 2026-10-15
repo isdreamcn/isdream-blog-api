@@ -19,3 +19,4 @@ run/
 .env.*
 !.env.example
 sitemap.txt
+plan.md

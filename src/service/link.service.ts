@@ -1,7 +1,7 @@
 import { Provide } from '@midwayjs/core';
 import { InjectEntityModel } from '@midwayjs/typeorm';
-import { Inject } from '@midwayjs/decorator';
-import { Context } from '@midwayjs/koa';
+import { Inject } from '@midwayjs/core';
+import type { Context } from '@midwayjs/koa';
 import { Repository } from 'typeorm';
 import { Link } from '../entity/link';
 import { LinkTypeService } from './linkType.service';

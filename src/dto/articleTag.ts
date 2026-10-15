@@ -1,4 +1,5 @@
-import { Rule, RuleType } from '@midwayjs/validate';
+import { Rule } from '@midwayjs/validation';
+import * as RuleType from 'joi';
 
 export class ArticleTagDTO {
   @Rule(RuleType.string().required())

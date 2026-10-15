@@ -1,6 +1,6 @@
 # isdream-blog-api
 
-isdream.cn 博客后端服务,基于 Midway 3(Node.js ≥ 20、TypeScript)+ Koa + TypeORM(MySQL)。
+isdream.cn 博客后端服务,基于 Midway 4(Node.js ≥ 20、TypeScript)+ Koa + TypeORM(MySQL)。
 
 主要能力:
 

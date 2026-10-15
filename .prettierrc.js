@@ -1,4 +1,4 @@
 module.exports = {
   ...require('mwts/.prettierrc.json'),
-  "endOfLine": "auto"
-}
+  endOfLine: 'auto',
+};

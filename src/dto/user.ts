@@ -1,4 +1,5 @@
-import { OmitDto, Rule, RuleType } from '@midwayjs/validate';
+import { OmitDto, Rule } from '@midwayjs/validation';
+import * as RuleType from 'joi';
 
 export class UserDTO {
   @Rule(RuleType.string().email().required())

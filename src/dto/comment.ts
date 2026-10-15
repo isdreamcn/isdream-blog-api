@@ -1,4 +1,5 @@
-import { Rule, RuleType, OmitDto } from '@midwayjs/validate';
+import { Rule, OmitDto } from '@midwayjs/validation';
+import * as RuleType from 'joi';
 import { CommonFindListDTO } from './common';
 
 export class CommentDTO {
