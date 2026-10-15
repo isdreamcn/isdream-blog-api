@@ -127,8 +127,10 @@ export class CommentService {
 
   async approveComment(id: number) {
     const comment = await this.findComment(id);
+    // 只回写目标字段:spread 携带 relations 对象时,0.3.20 的 save 会将
+    // article 关系解析为 articleId=null 导致整体失败
     return await this.commentModel.save({
-      ...comment,
+      id: comment.id,
       approved: !comment.approved,
     });
   }
@@ -190,14 +192,25 @@ export class CommentService {
       .leftJoinAndSelect('comment.replyUser', 'replyUser')
       .leftJoinAndSelect('comment.emojis', 'emojis')
       .leftJoinAndSelect('emojis.file', 'emojisFile')
-      .leftJoinAndSelect('emojis.type', 'emojisType')
-      .addSelect('COUNT(likedUser.id) as likedCount')
-      .leftJoin('comment.likedUsers', 'likedUser')
-      .groupBy('comment.id')
-      .addGroupBy('emojis.id');
+      .leftJoinAndSelect('emojis.type', 'emojisType');
 
     if (sort === 1) {
-      queryBuilder = queryBuilder.orderBy('likedCount', 'DESC');
+      // skip/take + joinSelect 时 TypeORM 包 DISTINCT 子查询:orderCriteria 含 "." 会被
+      // 强制按 alias.property 解析、聚合别名又不在外层 SELECT,均被 MySQL 拒绝;改为
+      // 子查询计数列 addSelect 成无点号别名后按别名排序,内外两层 SQL 均合法,并顺带
+      // 修正原 COUNT 因 join 表情关系导致的计数膨胀
+      queryBuilder = queryBuilder
+        .addSelect(
+          qb =>
+            qb
+              .subQuery()
+              .select('COUNT(*)')
+              .from(Comment, 'commentLike')
+              .leftJoin('commentLike.likedUsers', 'likedUser')
+              .where('commentLike.id = comment.id'),
+          'likedCountSort'
+        )
+        .orderBy('likedCountSort', 'DESC');
     } else if (sort === 2) {
       queryBuilder = queryBuilder.orderBy('comment.createdAt', 'DESC');
     }

@@ -93,7 +93,9 @@ export class StatisticService {
       .addSelect('COUNT(comment.id)', 'comments')
       .leftJoin('article.comments', 'comment', 'comment.approved = 1')
       .groupBy('month')
-      .orderBy('article.createdAt')
+      // 非聚合列排序违反 only_full_group_by;按组内最早文章时间排序,月份序正确
+      // (month 为 "%Y-%c" 无前导零格式,直接按别名排序会出现 10 月排在 2 月前)
+      .orderBy('MIN(article.createdAt)')
       .getRawMany();
   }
 }
